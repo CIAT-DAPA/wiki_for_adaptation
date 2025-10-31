@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+  <article class="method">
+    <header class="page-header">
+      <h1 class="page-title">{{ page.title }}</h1>
+      {% if page.resolution %}<p class="page-meta"><strong>Resolution:</strong> {{ page.resolution }}</p>{% endif %}
+    </header>
+
+    {% if page.description %}
+    <section class="card">
+      <h2>Description</h2>
+      <div class="prose">{% richtext page.description %}</div>
+    </section>
+    {% endif %}
+
+    <div class="grid two-cols gap">
+      {% if page.advantages %}
+      <section class="card">
+        <h2>Advantages</h2>
+        <div class="prose">{% richtext page.advantages %}</div>
+      </section>
+      {% endif %}
+      {% if page.limitations %}
+      <section class="card">
+        <h2>Limitations</h2>
+        <div class="prose">{% richtext page.limitations %}</div>
+      </section>
+      {% endif %}
+    </div>
+
+    {% if page.use_case %}
+    <section class="card">
+      <h2>Use case</h2>
+      <div class="prose">{% richtext page.use_case %}</div>
+    </section>
+    {% endif %}
+
+    {# No SOPs under Method anymore #}
+  </article>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+  <article class="sop">
+    <header class="page-header">
+      <h1 class="page-title">{{ page.title }}</h1>
+      <p class="page-meta">By {{ page.entry_author|default:"Unknown" }} · {{ page.first_published_at|date:"m/d/Y" }}</p>
+    </header>
+
+    <section class="card">
+      <h2>Definition</h2>
+      <div class="prose">{% richtext page.definition %}</div>
+    </section>
+
+    {% if page.data_sources %}
+    <section class="card">
+      <h2>Data sources</h2>
+      <div class="prose">{% richtext page.data_sources %}</div>
+    </section>
+    {% endif %}
+
+    <section class="card">
+      <div class="grid two-cols gap">
+        {% if page.units %}
+        <div>
+          <h3>Units</h3>
+          <p>{{ page.units }}</p>
+        </div>
+        {% endif %}
+        {% if page.frequency %}
+        <div>
+          <h3>Frequency</h3>
+          <p>{{ page.frequency }}</p>
+        </div>
+        {% endif %}
+        {% if page.geographic_scale %}
+        <div>
+          <h3>Geographic scale</h3>
+          <p>{{ page.geographic_scale }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+    {% if page.technical_capacity %}
+    <section class="card">
+      <h2>Technical capacity</h2>
+      <div class="prose">{% richtext page.technical_capacity %}</div>
+    </section>
+    {% endif %}
+  </article>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+  <article class="indicator">
+    <header class="page-header">
+      <h1 class="page-title">{{ page.title }}</h1>
+      <p class="page-meta">By {{ page.entry_author|default:"Unknown" }} · {{ page.first_published_at|date:"m/d/Y" }}</p>
+    </header>
+
+    {% if page.description %}
+    <section class="card">
+      <h2>Description</h2>
+      <div class="prose">{% richtext page.description %}</div>
+    </section>
+    {% endif %}
+  </article>
+{% endblock %}

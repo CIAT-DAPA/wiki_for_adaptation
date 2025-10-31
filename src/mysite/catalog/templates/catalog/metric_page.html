@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block content %}
+  <article class="metric">
+    <header class="page-header">
+      <h1 class="page-title">{{ page.title }}</h1>
+      <p class="page-meta">By {{ page.entry_author|default:"Unknown" }} · {{ page.first_published_at|date:"m/d/Y" }}</p>
+    </header>
+
+    <section class="card">
+      <h2>Description</h2>
+      <div class="prose">{% richtext page.description %}</div>
+    </section>
+
+    {% if page.purpose %}
+    <section class="card">
+      <h2><span class="icon">🛈</span> Purpose</h2>
+      <div class="prose">{% richtext page.purpose %}</div>
+    </section>
+    {% endif %}
+
+    {% with methods=page.get_children.type:'catalog.MethodPage'.specific %}
+      <section>
+        <h2>Methods</h2>
+        {% if methods %}
+          {% for m in methods %}
+            <article id="method-{{ m.slug }}" class="method-block card">
+              <header>
+                <h3>{{ m.title }}</h3>
+                {% if m.description %}<div class="prose muted">{{ m.description|striptags }}</div>{% endif %}
+              </header>
+              {% if m.resolution %}
+                <div class="badge-row"><span class="badge badge-resolution">⚡ Resolution</span> <span>{{ m.resolution }}</span></div>
+              {% endif %}
+              <div class="grid two-cols gap">
+                <div>
+                  <h4>Advantages</h4>
+                  <ul class="adv-list">
+                  {% for adv in m.advantages.source|default_if_none:''|linebreaksbr|striptags|linebreaks|safe|split:'<br />' %}
+                    {% if adv %}<li class="badge badge-adv">🟢 {{ adv|safe }}</li>{% endif %}
+                  {% endfor %}
+                  </ul>
+                </div>
+                <div>
+                  <h4>Limitations</h4>
+                  <ul class="lim-list">
+                  {% for lim in m.limitations.source|default_if_none:''|linebreaksbr|striptags|linebreaks|safe|split:'<br />' %}
+                    {% if lim %}<li class="badge badge-lim">🔴 {{ lim|safe }}</li>{% endif %}
+                  {% endfor %}
+                  </ul>
+                </div>
+              </div>
+              {% if m.use_case %}
+                <div>
+                  <h4>Use Case</h4>
+                  <div class="prose">{% richtext m.use_case %}</div>
+                </div>
+              {% endif %}
+            </article>
+          {% endfor %}
+        {% else %}
+          <p class="muted">No methods yet.</p>
+        {% endif %}
+      </section>
+    {% endwith %}
+
+    {% with sops=page.get_children.type:'catalog.SOPPage'.specific %}
+      <section class="card">
+        <h2><span class="icon">🗝️</span> Related SOPs</h2>
+        <div class="muted" style="margin-bottom:0.5rem;">Standard Operating Procedures for collecting this metric</div>
+        {% if sops %}
+          <ul class="sop-list">
+            {% for s in sops %}
+              <li class="sop-card">
+                <span class="badge badge-sop">SOP</span>
+                <div class="sop-main">
+                  <a href="{{ s.url }}"><strong>{{ s.title }}</strong></a>
+                  {% if s.definition %}<div class="muted">{{ s.definition|striptags|truncatechars:120 }}</div>{% endif %}
+                </div>
+                <span class="sop-arrow">→</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted">No SOPs yet.</p>
+        {% endif %}
+      </section>
+    {% endwith %}
+  </article>
+{% endblock %}

@@ -1,0 +1,102 @@
+/* --- Enhanced for Metric/Method/SOP mockup --- */
+.icon { font-size: 1.1em; vertical-align: middle; margin-right: 0.25em; }
+.badge {
+	display: inline-block;
+	font-size: 0.85em;
+	font-weight: 600;
+	border-radius: 1em;
+	padding: 0.15em 0.7em;
+	margin-right: 0.5em;
+	vertical-align: middle;
+	background: #f3f4f6;
+	color: #374151;
+	letter-spacing: 0.01em;
+}
+.badge-resolution { background: #e0e7ff; color: #3730a3; }
+.badge-adv { background: #e0fce0; color: #15803d; margin-bottom: 0.2em; }
+.badge-lim { background: #fee2e2; color: #b91c1c; margin-bottom: 0.2em; }
+.badge-sop { background: #fef08a; color: #b45309; margin-right: 0.75em; }
+
+.badge-row { margin: 0.5em 0 0.5em 0; }
+
+.sop-list { list-style: none; padding: 0; margin: 0; }
+.sop-card {
+	display: flex;
+	align-items: center;
+	border: 1px solid var(--border);
+	border-radius: 0.5em;
+	padding: 0.75em 1em;
+	margin-bottom: 0.7em;
+	background: #fffbe7;
+	box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+	transition: box-shadow 0.15s;
+}
+.sop-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.sop-main { flex: 1 1 auto; }
+.sop-arrow { font-size: 1.5em; color: #b45309; margin-left: 0.5em; }
+
+.adv-list, .lim-list { list-style: none; padding-left: 0; margin: 0.2em 0 0.2em 0; }
+.adv-list li, .lim-list li { margin-bottom: 0.1em; }
+/* Minimal styles to support wiki content layout */
+
+:root {
+	--bg: #f9fafb;
+	--card-bg: #ffffff;
+	--border: #e5e7eb;
+	--text: #1f2937;
+	--muted: #6b7280;
+	--link: #2563eb;
+}
+
+html, body {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+	color: var(--text);
+	background: var(--bg);
+	line-height: 1.6;
+}
+
+.page-header { margin: 0 0 1.25rem; }
+.page-title { margin: 0 0 .25rem; font-size: 2rem; line-height: 1.2; }
+.page-meta { margin: 0; color: var(--muted); font-size: .9rem; }
+
+.card {
+	background: var(--card-bg);
+	border: 1px solid var(--border);
+	border-radius: .5rem;
+	padding: 1rem 1.25rem;
+	margin: 1rem 0;
+	box-shadow: 0 1px 1px rgba(0,0,0,.02);
+}
+
+.prose h2, .prose h3 { margin-top: 1rem; }
+.prose p { margin: .5rem 0; }
+.prose ul, .prose ol { padding-left: 1.25rem; }
+
+.grid { display: grid; }
+.grid.two-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid.gap { gap: 1rem; }
+
+@media (max-width: 768px) {
+	.grid.two-cols { grid-template-columns: 1fr; }
+}
+
+.divider {
+	border: 0;
+	border-top: 1px solid var(--border);
+	margin: 1.5rem 0;
+}
+
+.link-list { list-style: none; padding-left: 0; }
+.link-list li { margin: .25rem 0; }
+.link-list a { color: var(--link); text-decoration: none; }
+.link-list a:hover { text-decoration: underline; }
+
+.muted { color: var(--muted); }
+
+/* Page-specific minor tweaks */
+.metric .method-block { margin-bottom: 1rem; }
