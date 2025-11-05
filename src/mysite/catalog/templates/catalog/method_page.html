@@ -11,7 +11,7 @@
     {% if page.description %}
     <section class="card">
       <h2>Description</h2>
-      <div class="prose">{% richtext page.description %}</div>
+      <div class="prose">{{ page.description|safe }}</div>
     </section>
     {% endif %}
 
@@ -19,13 +19,13 @@
       {% if page.advantages %}
       <section class="card">
         <h2>Advantages</h2>
-        <div class="prose">{% richtext page.advantages %}</div>
+        <div class="prose">{{ page.advantages|safe }}</div>
       </section>
       {% endif %}
       {% if page.limitations %}
       <section class="card">
         <h2>Limitations</h2>
-        <div class="prose">{% richtext page.limitations %}</div>
+        <div class="prose">{{ page.limitations|safe }}</div>
       </section>
       {% endif %}
     </div>
@@ -33,7 +33,7 @@
     {% if page.use_case %}
     <section class="card">
       <h2>Use case</h2>
-      <div class="prose">{% richtext page.use_case %}</div>
+      <div class="prose">{{ page.use_case|safe }}</div>
     </section>
     {% endif %}
 

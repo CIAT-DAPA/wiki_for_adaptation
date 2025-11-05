@@ -11,7 +11,7 @@
     {% if page.description %}
     <section class="card">
       <h2>Description</h2>
-      <div class="prose">{% richtext page.description %}</div>
+      <div class="prose">{{ page.description|safe }}</div>
     </section>
     {% endif %}
   </article>

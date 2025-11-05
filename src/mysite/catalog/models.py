@@ -176,6 +176,14 @@ class SOPPage(BaseWikiPage):
     geographic_scale = models.CharField(max_length=150, blank=True)
     technical_capacity = RichTextField(blank=True)
 
+    activities_and_steps = RichTextField(blank=True)
+    options_enhancing_robustness = RichTextField(blank=True)
+    options_reducing_costs = RichTextField(blank=True)
+    available_tools_and_code = RichTextField(blank=True)
+    references = RichTextField(blank=True)
+    visual_content = RichTextField(blank=True)
+    flagship_method_status = RichTextField(blank=True)
+
     entry_author = models.CharField(max_length=255, blank=True)
 
     content_panels = BaseWikiPage.content_panels + [
@@ -185,6 +193,13 @@ class SOPPage(BaseWikiPage):
         FieldPanel("frequency"),
         FieldPanel("geographic_scale"),
         FieldPanel("technical_capacity"),
+        FieldPanel("activities_and_steps"),
+        FieldPanel("options_enhancing_robustness"),
+        FieldPanel("options_reducing_costs"),
+        FieldPanel("available_tools_and_code"),
+        FieldPanel("references"),
+        FieldPanel("visual_content"),
+        FieldPanel("flagship_method_status"),
     ]
 
     promote_panels = Page.promote_panels + [
@@ -195,14 +210,14 @@ class SOPPage(BaseWikiPage):
 
     def clean(self):
         super().clean()
-        # Enforce max 3 SOPs per method
-        if self.get_parent() and isinstance(self.get_parent().specific, MethodPage):
+        # Enforce max 3 SOPs per metric (SOPs are children of Metric)
+        if self.get_parent() and isinstance(self.get_parent().specific, MetricPage):
             parent = self.get_parent().specific
             count = parent.get_children().type(SOPPage).count()
             if not self.pk:
                 count += 1
             if count > 3:
-                raise ValidationError({"title": _("Each Method can only have up to 3 SOPs.")})
+                raise ValidationError({"title": _("Each Metric can only have up to 3 SOPs.")})
 
     class Meta:
         verbose_name = "SOP"

@@ -10,13 +10,13 @@
 
     <section class="card">
       <h2>Definition</h2>
-      <div class="prose">{% richtext page.definition %}</div>
+      <div class="prose">{{ page.definition|safe }}</div>
     </section>
 
     {% if page.data_sources %}
     <section class="card">
       <h2>Data sources</h2>
-      <div class="prose">{% richtext page.data_sources %}</div>
+      <div class="prose">{{ page.data_sources|safe }}</div>
     </section>
     {% endif %}
 
@@ -46,7 +46,56 @@
     {% if page.technical_capacity %}
     <section class="card">
       <h2>Technical capacity</h2>
-      <div class="prose">{% richtext page.technical_capacity %}</div>
+      <div class="prose">{{ page.technical_capacity|safe }}</div>
+    </section>
+    {% endif %}
+
+    {% if page.activities_and_steps %}
+    <section class="card">
+      <h2>Activities and Steps</h2>
+      <div class="prose">{{ page.activities_and_steps|safe }}</div>
+    </section>
+    {% endif %}
+
+    {% if page.options_enhancing_robustness %}
+    <section class="card">
+      <h2>Options for Enhancing Robustness</h2>
+      <div class="prose">{{ page.options_enhancing_robustness|safe }}</div>
+    </section>
+    {% endif %}
+
+    {% if page.options_reducing_costs %}
+    <section class="card">
+      <h2>Options for Reducing Costs</h2>
+      <div class="prose">{{ page.options_reducing_costs|safe }}</div>
+    </section>
+    {% endif %}
+
+    {% if page.available_tools_and_code %}
+    <section class="card">
+      <h2>Available Tools and Code</h2>
+      <div class="prose">{{ page.available_tools_and_code|safe }}</div>
+    </section>
+    {% endif %}
+
+    {% if page.references %}
+    <section class="card">
+      <h2>References</h2>
+      <div class="prose">{{ page.references|safe }}</div>
+    </section>
+    {% endif %}
+
+    {% if page.visual_content %}
+    <section class="card">
+      <h2>Visual Content</h2>
+      <div class="prose">{{ page.visual_content|safe }}</div>
+    </section>
+    {% endif %}
+
+    {% if page.flagship_method_status %}
+    <section class="card">
+      <h2>Flagship Method Status</h2>
+      <div class="prose">{{ page.flagship_method_status|safe }}</div>
     </section>
     {% endif %}
   </article>
