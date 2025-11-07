@@ -3,39 +3,217 @@
 
 {% block body_class %}template-searchresults{% endblock %}
 
-{% block title %}Search{% endblock %}
+{% block title %}Search Indicators{% if search_query %} - {{ search_query }}{% endif %}{% endblock %}
 
 {% block content %}
-    <h1>Search</h1>
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Search Indicators</h1>
+        <p class="text-gray-600">Search across all indicators, metrics, and SOPs</p>
+    </div>
 
-    <form action="{% url 'search' %}" method="get">
-        <input type="text" name="query"{% if search_query %} value="{{ search_query }}"{% endif %}>
-        <input type="submit" value="Search" class="button">
-    </form>
+    <!-- Search Form -->
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-8">
+        <form action="{% url 'search' %}" method="get" class="flex items-center gap-2">
+            <i class="fa fa-search text-gray-400"></i>
+            <input 
+                type="text" 
+                name="query" 
+                placeholder="Search by name, description, or keywords..." 
+                value="{% if search_query %}{{ search_query }}{% endif %}"
+                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green"
+            >
+            <button type="submit" class="px-5 py-2 bg-brand-green text-white rounded-lg font-semibold hover:bg-green-600 transition">
+                Search
+            </button>
+        </form>
+    </div>
 
-    {% if search_results %}
-        <ul>
-            {% for result in search_results %}
-                <li>
-                    <h4><a href="{% pageurl result %}">{{ result.title }}</a></h4>
-                    {% with txt=result.specific.summary|default:result.search_description %}
-                        {% if txt %}
-                            {{ txt|truncatechars:200 }}
-                        {% endif %}
-                    {% endwith %}
-                </li>
-            {% endfor %}
-        </ul>
-
-        <nav>
-            {% if search_results.has_previous %}
-                <a href="?query={{ search_query|urlencode }}&amp;page={{ search_results.previous_page_number }}">Previous</a>
+    <!-- Advanced Filters -->
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-8">
+        <div class="flex items-center mb-4">
+            <i class="fa fa-filter text-gray-600 mr-2"></i>
+            <h2 class="text-lg font-semibold text-gray-900">Advance Filters</h2>
+        </div>
+        <p class="text-sm text-gray-600 mb-4">Narrow your search results</p>
+        
+        <form method="get" action="{% url 'search' %}" class="grid md:grid-cols-3 gap-4">
+            <input type="hidden" name="query" value="{{ search_query }}">
+            {% if content_type_filter %}
+                <input type="hidden" name="type" value="{{ content_type_filter }}">
             {% endif %}
-            {% if search_results.has_next %}
-                <a href="?query={{ search_query|urlencode }}&amp;page={{ search_results.next_page_number }}">Next</a>
-            {% endif %}
-        </nav>
-    {% elif search_query %}
-        <p>No results found</p>
+            
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa fa-tag text-gray-500 mr-1"></i>
+                    Dimension
+                </label>
+                <select name="dimension" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
+                    <option value="all">All Dimensions</option>
+                    {% for dimension in dimensions %}
+                        <option value="{{ dimension }}" {% if dimension_filter == dimension %}selected{% endif %}>{{ dimension }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa fa-chart-line text-gray-500 mr-1"></i>
+                    Indicator Type
+                </label>
+                <select name="indicator_type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
+                    <option value="all">All Types</option>
+                    {% for type in indicator_types %}
+                        <option value="{{ type }}" {% if indicator_type_filter == type %}selected{% endif %}>{{ type }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa fa-user text-gray-500 mr-1"></i>
+                    Author
+                </label>
+                <select name="author" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
+                    <option value="all">All Authors</option>
+                    {% for author in authors %}
+                        <option value="{{ author }}" {% if author_filter == author %}selected{% endif %}>{{ author }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa fa-map-marker-alt text-gray-500 mr-1"></i>
+                    Geographic Scale
+                </label>
+                <select name="geographic_scale" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
+                    <option value="all">All Scales</option>
+                    {% for scale in geographic_scales %}
+                        <option value="{{ scale }}" {% if geographic_scale_filter == scale %}selected{% endif %}>{{ scale }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa fa-clock text-gray-500 mr-1"></i>
+                    Frequency
+                </label>
+                <select name="frequency" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
+                    <option value="all">All Frequencies</option>
+                    {% for freq in frequencies %}
+                        <option value="{{ freq }}" {% if frequency_filter == freq %}selected{% endif %}>{{ freq }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Count -->
+    {% if search_query %}
+    <div class="mb-6">
+        <p class="text-gray-700">
+            Found <span class="font-semibold">{{ search_results.paginator.count }}</span> result{% if search_results.paginator.count != 1 %}s{% endif %}
+        </p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-4 mb-6 border-b border-gray-200">
+        <a href="?query={{ search_query|urlencode }}{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if author_filter %}&author={{ author_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}{% if frequency_filter %}&frequency={{ frequency_filter|urlencode }}{% endif %}" 
+           class="px-4 py-2 font-semibold {% if not content_type_filter %}text-gray-900 border-b-2 border-brand-green{% else %}text-gray-600 hover:text-gray-900{% endif %}">
+            All ({{ indicator_count|add:metric_count|add:sop_count }})
+        </a>
+        <a href="?query={{ search_query|urlencode }}&type=indicator{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if author_filter %}&author={{ author_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}{% if frequency_filter %}&frequency={{ frequency_filter|urlencode }}{% endif %}" 
+           class="px-4 py-2 font-semibold {% if content_type_filter == 'indicator' %}text-gray-900 border-b-2 border-brand-green{% else %}text-gray-600 hover:text-gray-900{% endif %}">
+            Indicators ({{ indicator_count }})
+        </a>
+        <a href="?query={{ search_query|urlencode }}&type=metric{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if author_filter %}&author={{ author_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}{% if frequency_filter %}&frequency={{ frequency_filter|urlencode }}{% endif %}" 
+           class="px-4 py-2 font-semibold {% if content_type_filter == 'metric' %}text-gray-900 border-b-2 border-brand-green{% else %}text-gray-600 hover:text-gray-900{% endif %}">
+            Metrics ({{ metric_count }})
+        </a>
+        <a href="?query={{ search_query|urlencode }}&type=sop{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if author_filter %}&author={{ author_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}{% if frequency_filter %}&frequency={{ frequency_filter|urlencode }}{% endif %}" 
+           class="px-4 py-2 font-semibold {% if content_type_filter == 'sop' %}text-gray-900 border-b-2 border-brand-green{% else %}text-gray-600 hover:text-gray-900{% endif %}">
+            SOPs ({{ sop_count }})
+        </a>
+    </div>
     {% endif %}
+
+    <!-- Search Results -->
+    {% if search_results %}
+    <div class="space-y-4">
+        {% for result in search_results %}
+        <a href="{% pageurl result %}" class="block bg-white border border-gray-200 rounded-lg shadow-sm p-5 hover:shadow-md transition-all group">
+            <div class="flex items-center gap-2 mb-2">
+                {% if result.content_type.model == 'indicatorpage' %}
+                    <span class="inline-block bg-blue-500 text-white text-xs font-bold uppercase px-2 py-1 rounded">indicator</span>
+                {% elif result.content_type.model == 'metricpage' %}
+                    <span class="inline-block bg-brand-green text-white text-xs font-bold uppercase px-2 py-1 rounded">metric</span>
+                {% elif result.content_type.model == 'soppage' %}
+                    <span class="inline-block bg-brand-orange text-white text-xs font-bold uppercase px-2 py-1 rounded">sop</span>
+                {% endif %}
+                <span class="text-gray-500 text-xs">{{ result.first_published_at|date:"m/d/Y" }}</span>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ result.title }}</h3>
+            
+            {% with result.specific as page %}
+                {% if page.description %}
+                    <p class="text-sm text-gray-600 mb-2">{{ page.description|striptags|truncatewords:30 }}</p>
+                {% endif %}
+                
+                <!-- Tags/Properties -->
+                <div class="flex flex-wrap gap-2 mt-3">
+                    {% if page.dimension %}
+                        <span class="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">{{ page.dimension }}</span>
+                    {% endif %}
+                    {% if page.type %}
+                        <span class="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">{{ page.type }}</span>
+                    {% endif %}
+                </div>
+                
+                <!-- Author -->
+                {% if page.entry_author %}
+                <p class="text-xs text-gray-500 mt-2">By {{ page.entry_author }}</p>
+                {% endif %}
+            {% endwith %}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if search_results.has_other_pages %}
+    <nav class="flex justify-center items-center gap-2 mt-8">
+        {% if search_results.has_previous %}
+            <a href="?query={{ search_query|urlencode }}&page={{ search_results.previous_page_number }}{% if content_type_filter %}&type={{ content_type_filter }}{% endif %}{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if author_filter %}&author={{ author_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}{% if frequency_filter %}&frequency={{ frequency_filter|urlencode }}{% endif %}" 
+               class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
+                Previous
+            </a>
+        {% endif %}
+        
+        <span class="px-4 py-2 text-gray-700">
+            Page {{ search_results.number }} of {{ search_results.paginator.num_pages }}
+        </span>
+        
+        {% if search_results.has_next %}
+            <a href="?query={{ search_query|urlencode }}&page={{ search_results.next_page_number }}{% if content_type_filter %}&type={{ content_type_filter }}{% endif %}{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if author_filter %}&author={{ author_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}{% if frequency_filter %}&frequency={{ frequency_filter|urlencode }}{% endif %}" 
+               class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
+                Next
+            </a>
+        {% endif %}
+    </nav>
+    {% endif %}
+
+    {% elif search_query %}
+    <div class="text-center py-12">
+        <i class="fas fa-search text-gray-300 text-6xl mb-4"></i>
+        <p class="text-xl text-gray-600">No results found for "{{ search_query }}"</p>
+        <p class="text-gray-500 mt-2">Try different keywords or check your spelling</p>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <i class="fas fa-search text-gray-300 text-6xl mb-4"></i>
+        <p class="text-xl text-gray-600">Enter a search term to find indicators, metrics, and SOPs</p>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

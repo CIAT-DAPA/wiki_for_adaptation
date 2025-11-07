@@ -24,6 +24,21 @@
         {% endif %}
 
         {# Global stylesheets #}
+        {# Tailwind CSS #}
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            'brand-green': '#10b981',
+                            'brand-red': '#ef4444',
+                            'brand-orange': '#f97316',
+                        }
+                    }
+                }
+            }
+        </script>
         <link rel="stylesheet" type="text/css" href="{% static 'css/mysite.css' %}">
         
         {# Font Awesome Icons #}
@@ -34,16 +49,51 @@
         {% endblock %}
     </head>
 
-    <body class="{% block body_class %}{% endblock %}">
-        {% wagtailuserbar %}
+        <body class="bg-gray-50 min-h-screen flex flex-col {% block body_class %}{% endblock %}">
+                {% wagtailuserbar %}
 
-        {% block content %}{% endblock %}
+                <!-- Navbar -->
+                <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+                    <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
+                        <div class="flex items-center gap-6">
+                            <a href="/" class="font-bold text-lg text-gray-900 flex items-center"><i class="fa-solid fa-cloud mr-2 text-brand-green"></i>Wiki</a>
+                            <form action="/search/" method="get" class="hidden md:flex items-center bg-gray-100 rounded-lg px-2 py-1 ml-4 w-96">
+                                <i class="fa fa-search text-gray-400 mr-2"></i>
+                                <input type="text" name="q" placeholder="Search by name, description, or keywords..." class="bg-transparent outline-none flex-1 text-sm text-gray-700" />
+                                <button type="submit" class="ml-2 px-3 py-1 bg-brand-green text-white rounded text-xs font-semibold">Search</button>
+                            </form>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <a href="#" class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1"><i class="fa-solid fa-diagram-project text-xs"></i> Impact pathways</a>
+                            <a href="#" class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1"><i class="fa-solid fa-chart-network text-xs"></i> Tracking Framework</a>
+                            <a href="/search/" class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1"><i class="fa fa-search text-xs"></i> Search</a>
+                            <a href="#" class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1"><i class="fa-regular fa-circle-question text-xs"></i> Help & Colab</a>
+                            <a href="#" class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1"><i class="fa-regular fa-circle-info text-xs"></i> About</a>
+                        </div>
+                    </div>
+                </nav>
 
-        {# Global javascript #}
-        <script type="text/javascript" src="{% static 'js/mysite.js' %}"></script>
+                <main class="flex-1 w-full">
+                    {% block content %}{% endblock %}
+                </main>
 
-        {% block extra_js %}
-        {# Override this in templates to add extra javascript #}
-        {% endblock %}
-    </body>
+                <!-- Footer -->
+                <footer class="bg-white border-t border-gray-200 mt-8">
+                    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                        <span class="font-bold text-gray-900 flex items-center"><i class="fa-solid fa-cloud mr-2 text-brand-green"></i>Wiki</span>
+                        <div class="flex gap-2">
+                            <span class="w-6 h-2 bg-gray-200 rounded-full"></span>
+                            <span class="w-6 h-2 bg-gray-200 rounded-full"></span>
+                            <span class="w-6 h-2 bg-gray-200 rounded-full"></span>
+                            <span class="w-6 h-2 bg-gray-200 rounded-full"></span>
+                        </div>
+                    </div>
+                </footer>
+
+                <script type="text/javascript" src="{% static 'js/mysite.js' %}"></script>
+
+                {% block extra_js %}
+                {# Override this in templates to add extra javascript #}
+                {% endblock %}
+        </body>
 </html>
