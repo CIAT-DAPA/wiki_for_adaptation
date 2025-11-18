@@ -1,8 +1,24 @@
-﻿{% extends "base.html" %}
+﻿{% extends "catalog/catalog_base.html" %}
 {% load wagtailcore_tags %}
 
-{% block content %}
-  <article class="max-w-5xl mx-auto px-4 py-6">
+{% block sidebar_contents %}
+  <li><a href="#description" class="text-gray-700 hover:text-brand-green">Description</a></li>
+  {% if page.purpose %}
+  <li><a href="#purpose" class="text-gray-700 hover:text-brand-green">Purpose</a></li>
+  {% endif %}
+  {% with methods=page.get_children.live.specific %}
+    {% if methods %}
+    <li><a href="#methods" class="text-gray-700 hover:text-brand-green">Methods</a></li>
+    {% endif %}
+  {% endwith %}
+  {% with sops=page.get_children.live.specific %}
+    {% if sops %}
+    <li><a href="#sops" class="text-gray-700 hover:text-brand-green">SOPs</a></li>
+    {% endif %}
+  {% endwith %}
+{% endblock %}
+
+{% block article_content %}
     <header class="mb-6 pb-4 border-b-2 border-gray-200">
       <span class="inline-block bg-brand-green text-white text-xs font-bold uppercase px-3 py-1 rounded mb-2">Metric</span>
       <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
@@ -13,14 +29,14 @@
     </header>
 
     {% if page.description %}
-    <section class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4">
+    <section id="description" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">Description</h2>
       <div class="prose prose-sm max-w-none">{{ page.description|safe }}</div>
     </section>
     {% endif %}
 
     {% if page.purpose %}
-    <section class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4">
+    <section id="purpose" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3 flex items-center">
         <i class="fas fa-bullseye text-gray-900 mr-2"></i>Purpose
       </h2>
@@ -30,7 +46,7 @@
 
     {% with methods=page.get_children.live.specific %}
       {% if methods %}
-      <section class="my-8">
+      <section id="methods" class="my-8 scroll-mt-20">
         <h2 class="text-3xl font-bold text-gray-900 mb-6">Methods</h2>
         <div class="space-y-6">
           {% for child in methods %}
@@ -82,7 +98,7 @@
 
     {% with sops=page.get_children.live.specific %}
       {% if sops %}
-      <section class="my-8">
+      <section id="sops" class="my-8 scroll-mt-20">
         <h2 class="text-3xl font-bold text-gray-900 mb-6">
           <i class="fas fa-clipboard-list text-gray-700 mr-2"></i>Standard Operating Procedures (SOPs)
         </h2>
@@ -104,5 +120,4 @@
       </section>
       {% endif %}
     {% endwith %}
-  </article>
 {% endblock %}

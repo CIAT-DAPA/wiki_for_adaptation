@@ -1,8 +1,27 @@
-{% extends "base.html" %}
+{% extends "catalog/catalog_base.html" %}
 {% load wagtailcore_tags %}
 
-{% block content %}
-  <article class="max-w-5xl mx-auto px-4 py-6">
+{% block sidebar_contents %}
+  <li><a href="#description" class="text-gray-700 hover:text-brand-green">Description</a></li>
+  <li><a href="#properties" class="text-gray-700 hover:text-brand-green">Properties</a></li>
+  {% with metrics=page.get_children.live.specific %}
+    {% if metrics %}
+    <li>
+      <button class="flex items-center justify-between w-full text-gray-700 hover:text-brand-green font-medium" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i').classList.toggle('fa-chevron-down'); this.querySelector('i').classList.toggle('fa-chevron-up');">
+        <span>Related Metrics</span>
+        <i class="fas fa-chevron-down text-xs"></i>
+      </button>
+      <ul class="ml-4 mt-2 space-y-1.5">
+        {% for metric in metrics %}
+        <li><a href="#metric-{{ forloop.counter }}" class="text-gray-600 hover:text-brand-green text-xs">{{ metric.title|truncatewords:4 }}</a></li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% endif %}
+  {% endwith %}
+{% endblock %}
+
+{% block article_content %}
     <header class="mb-6 pb-4 border-b-2 border-gray-200">
       <span class="inline-block bg-blue-500 text-white text-xs font-bold uppercase px-3 py-1 rounded mb-2">Indicator</span>
       <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
@@ -13,14 +32,14 @@
     </header>
 
     {% if page.description %}
-    <section class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4">
+    <section id="description" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">Description</h2>
       <div class="prose prose-sm max-w-none">{{ page.description|safe }}</div>
     </section>
     {% endif %}
 
     {% if page.dimension or page.type %}
-    <section class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4">
+    <section id="properties" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-4">Properties</h2>
       
       {% if page.dimension %}
@@ -52,7 +71,7 @@
         <p class="text-gray-600 mb-6">Metrics used to measure this indicator</p>
         <div class="space-y-4">
           {% for metric in metrics %}
-          <a href="{% pageurl metric %}" class="block bg-white border border-gray-200 rounded-lg shadow-sm p-5 hover:shadow-md hover:border-brand-green transition-all group">
+          <a id="metric-{{ forloop.counter }}" href="{% pageurl metric %}" class="block bg-white border border-gray-200 rounded-lg shadow-sm p-5 hover:shadow-md hover:border-brand-green transition-all group scroll-mt-20">
             <div class="flex items-start justify-between">
               <div class="flex-1">
                 <span class="inline-block bg-brand-green text-white text-xs font-bold uppercase px-2 py-1 rounded mb-2">Metric</span>
@@ -71,5 +90,4 @@
       </section>
       {% endif %}
     {% endwith %}
-  </article>
 {% endblock %}

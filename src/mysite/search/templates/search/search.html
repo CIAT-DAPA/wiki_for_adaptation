@@ -37,11 +37,21 @@
         </div>
         <p class="text-sm text-gray-600 mb-4">Narrow your search results</p>
         
-        <form method="get" action="{% url 'search' %}" class="grid md:grid-cols-3 gap-4">
+        <form method="get" action="{% url 'search' %}" class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             <input type="hidden" name="query" value="{{ search_query }}">
-            {% if content_type_filter %}
-                <input type="hidden" name="type" value="{{ content_type_filter }}">
-            {% endif %}
+            
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fa fa-layer-group text-gray-500 mr-1"></i>
+                    Category
+                </label>
+                <select name="category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
+                    <option value="all">All Categories</option>
+                    <option value="indicator" {% if content_type_filter == 'indicator' or category_filter == 'indicator' %}selected{% endif %}>Indicators</option>
+                    <option value="metric" {% if content_type_filter == 'metric' or category_filter == 'metric' %}selected{% endif %}>Metrics</option>
+                    <option value="sop" {% if content_type_filter == 'sop' or category_filter == 'sop' %}selected{% endif %}>SOPs</option>
+                </select>
+            </div>
             
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
@@ -71,19 +81,6 @@
             
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fa fa-user text-gray-500 mr-1"></i>
-                    Author
-                </label>
-                <select name="author" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
-                    <option value="all">All Authors</option>
-                    {% for author in authors %}
-                        <option value="{{ author }}" {% if author_filter == author %}selected{% endif %}>{{ author }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
                     <i class="fa fa-map-marker-alt text-gray-500 mr-1"></i>
                     Geographic Scale
                 </label>
@@ -94,45 +91,43 @@
                     {% endfor %}
                 </select>
             </div>
-            
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fa fa-clock text-gray-500 mr-1"></i>
-                    Frequency
-                </label>
-                <select name="frequency" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
-                    <option value="all">All Frequencies</option>
-                    {% for freq in frequencies %}
-                        <option value="{{ freq }}" {% if frequency_filter == freq %}selected{% endif %}>{{ freq }}</option>
-                    {% endfor %}
-                </select>
-            </div>
         </form>
     </div>
 
     <!-- Results Count -->
-    {% if search_query %}
+    {% if search_query or content_type_filter or category_filter %}
     <div class="mb-6">
         <p class="text-gray-700">
+            {% if search_query %}
             Found <span class="font-semibold">{{ search_results.paginator.count }}</span> result{% if search_results.paginator.count != 1 %}s{% endif %}
+            {% else %}
+            Showing <span class="font-semibold">{{ search_results.paginator.count }}</span> 
+            {% if content_type_filter == 'indicator' or category_filter == 'indicator' %}
+                indicator{% if search_results.paginator.count != 1 %}s{% endif %}
+            {% elif content_type_filter == 'metric' or category_filter == 'metric' %}
+                metric{% if search_results.paginator.count != 1 %}s{% endif %}
+            {% elif content_type_filter == 'sop' or category_filter == 'sop' %}
+                SOP{% if search_results.paginator.count != 1 %}s{% endif %}
+            {% endif %}
+            {% endif %}
         </p>
     </div>
 
     <!-- Tabs -->
     <div class="flex gap-4 mb-6 border-b border-gray-200">
-        <a href="?query={{ search_query|urlencode }}{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if author_filter %}&author={{ author_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}{% if frequency_filter %}&frequency={{ frequency_filter|urlencode }}{% endif %}" 
+        <a href="?{% if search_query %}query={{ search_query|urlencode }}{% endif %}{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}" 
            class="px-4 py-2 font-semibold {% if not content_type_filter %}text-gray-900 border-b-2 border-brand-green{% else %}text-gray-600 hover:text-gray-900{% endif %}">
             All ({{ indicator_count|add:metric_count|add:sop_count }})
         </a>
-        <a href="?query={{ search_query|urlencode }}&type=indicator{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if author_filter %}&author={{ author_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}{% if frequency_filter %}&frequency={{ frequency_filter|urlencode }}{% endif %}" 
+        <a href="?{% if search_query %}query={{ search_query|urlencode }}&{% endif %}type=indicator{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}" 
            class="px-4 py-2 font-semibold {% if content_type_filter == 'indicator' %}text-gray-900 border-b-2 border-brand-green{% else %}text-gray-600 hover:text-gray-900{% endif %}">
             Indicators ({{ indicator_count }})
         </a>
-        <a href="?query={{ search_query|urlencode }}&type=metric{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if author_filter %}&author={{ author_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}{% if frequency_filter %}&frequency={{ frequency_filter|urlencode }}{% endif %}" 
+        <a href="?{% if search_query %}query={{ search_query|urlencode }}&{% endif %}type=metric{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}" 
            class="px-4 py-2 font-semibold {% if content_type_filter == 'metric' %}text-gray-900 border-b-2 border-brand-green{% else %}text-gray-600 hover:text-gray-900{% endif %}">
             Metrics ({{ metric_count }})
         </a>
-        <a href="?query={{ search_query|urlencode }}&type=sop{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if author_filter %}&author={{ author_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}{% if frequency_filter %}&frequency={{ frequency_filter|urlencode }}{% endif %}" 
+        <a href="?{% if search_query %}query={{ search_query|urlencode }}&{% endif %}type=sop{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}" 
            class="px-4 py-2 font-semibold {% if content_type_filter == 'sop' %}text-gray-900 border-b-2 border-brand-green{% else %}text-gray-600 hover:text-gray-900{% endif %}">
             SOPs ({{ sop_count }})
         </a>
@@ -184,7 +179,7 @@
     {% if search_results.has_other_pages %}
     <nav class="flex justify-center items-center gap-2 mt-8">
         {% if search_results.has_previous %}
-            <a href="?query={{ search_query|urlencode }}&page={{ search_results.previous_page_number }}{% if content_type_filter %}&type={{ content_type_filter }}{% endif %}{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if author_filter %}&author={{ author_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}{% if frequency_filter %}&frequency={{ frequency_filter|urlencode }}{% endif %}" 
+            <a href="?{% if search_query %}query={{ search_query|urlencode }}&{% endif %}page={{ search_results.previous_page_number }}{% if content_type_filter %}&type={{ content_type_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}" 
                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
                 Previous
             </a>
@@ -195,7 +190,7 @@
         </span>
         
         {% if search_results.has_next %}
-            <a href="?query={{ search_query|urlencode }}&page={{ search_results.next_page_number }}{% if content_type_filter %}&type={{ content_type_filter }}{% endif %}{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if author_filter %}&author={{ author_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}{% if frequency_filter %}&frequency={{ frequency_filter|urlencode }}{% endif %}" 
+            <a href="?{% if search_query %}query={{ search_query|urlencode }}&{% endif %}page={{ search_results.next_page_number }}{% if content_type_filter %}&type={{ content_type_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}{% if dimension_filter %}&dimension={{ dimension_filter|urlencode }}{% endif %}{% if indicator_type_filter %}&indicator_type={{ indicator_type_filter|urlencode }}{% endif %}{% if geographic_scale_filter %}&geographic_scale={{ geographic_scale_filter|urlencode }}{% endif %}" 
                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100">
                 Next
             </a>
@@ -209,7 +204,7 @@
         <p class="text-xl text-gray-600">No results found for "{{ search_query }}"</p>
         <p class="text-gray-500 mt-2">Try different keywords or check your spelling</p>
     </div>
-    {% else %}
+    {% elif not content_type_filter and not category_filter %}
     <div class="text-center py-12">
         <i class="fas fa-search text-gray-300 text-6xl mb-4"></i>
         <p class="text-xl text-gray-600">Enter a search term to find indicators, metrics, and SOPs</p>

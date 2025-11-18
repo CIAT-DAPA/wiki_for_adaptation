@@ -44,6 +44,16 @@
         {# Font Awesome Icons #}
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+        <style>
+            /* Prevent FOUC for navbar dropdowns */
+            nav .group > div {
+                display: none;
+            }
+            nav .group:hover > div {
+                display: block;
+            }
+        </style>
+
         {% block extra_css %}
         {# Override this in templates to add extra stylesheets #}
         {% endblock %}
@@ -57,18 +67,74 @@
                     <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
                         <div class="flex items-center gap-6">
                             <a href="/" class="font-bold text-lg text-gray-900 flex items-center"><i class="fa-solid fa-cloud mr-2 text-brand-green"></i>Wiki</a>
-                            <form action="/search/" method="get" class="hidden md:flex items-center bg-gray-100 rounded-lg px-2 py-1 ml-4 w-96">
+                            <form action="/search/" method="get" class="hidden md:flex items-center bg-gray-100 rounded-lg px-3 py-2 ml-4 w-96">
                                 <i class="fa fa-search text-gray-400 mr-2"></i>
-                                <input type="text" name="q" placeholder="Search by name, description, or keywords..." class="bg-transparent outline-none flex-1 text-sm text-gray-700" />
-                                <button type="submit" class="ml-2 px-3 py-1 bg-brand-green text-white rounded text-xs font-semibold">Search</button>
+                                <input type="text" name="query" placeholder="Search by name, description, or keywords..." class="bg-transparent outline-none flex-1 text-sm text-gray-700" />
                             </form>
                         </div>
                         <div class="flex items-center gap-6">
-                            <a href="#" class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1"><i class="fa-solid fa-diagram-project text-xs"></i> Impact pathways</a>
-                            <a href="#" class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1"><i class="fa-solid fa-chart-network text-xs"></i> Tracking Framework</a>
-                            <a href="/search/" class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1"><i class="fa fa-search text-xs"></i> Search</a>
-                            <a href="#" class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1"><i class="fa-regular fa-circle-question text-xs"></i> Help & Colab</a>
-                            <a href="#" class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1"><i class="fa-regular fa-circle-info text-xs"></i> About</a>
+                            <a href="/search/?category=indicator" class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1"><i class="fa-solid fa-chart-bar text-xs"></i> Indicators</a>
+                            
+                            <!-- Tracking Framework Dropdown -->
+                            <div class="relative group">
+                                <button class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1">
+                                    <i class="fa-solid fa-chart-network text-xs"></i> Tracking Framework <i class="fa fa-chevron-down text-xs ml-1"></i>
+                                </button>
+                                <div class="absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all pointer-events-none group-hover:pointer-events-auto">
+                                    <a href="/impact-pathways/guidance" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Guidance: Project vs policy level</a>
+                                    <a href="/tracking-framework#tracking-framework" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Tracking framework</a>
+                                    <a href="/tracking-framework#indicator-framework" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Indicator framework</a>
+                                    <a href="/tracking-framework#selection-criteria" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">Selection criteria</a>
+                                </div>
+                            </div>
+                            
+                            <!-- Help Dropdown -->
+                            <div class="relative group">
+                                <button class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1">
+                                    <i class="fa-regular fa-circle-question text-xs"></i> Help <i class="fa fa-chevron-down text-xs ml-1"></i>
+                                </button>
+                                <div class="absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all pointer-events-none group-hover:pointer-events-auto">
+                                    <a href="/wiki-instructions" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">How to navigate this wiki</a>
+                                    <a href="/faq" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">FAQ</a>
+                                </div>
+                            </div>
+                            
+                            <!-- Collaborate Dropdown -->
+                            <div class="relative group">
+                                <button class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1">
+                                    <i class="fa-solid fa-users text-xs"></i> Collaborate <i class="fa fa-chevron-down text-xs ml-1"></i>
+                                </button>
+                                <div class="absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all pointer-events-none group-hover:pointer-events-auto">
+                                    <a href="/become-editor" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Become an editor</a>
+                                    <a href="/feedback" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">Feedback/Corrections</a>
+                                </div>
+                            </div>
+                            
+                            <a href="/about" class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1"><i class="fa-solid fa-circle-exclamation text-xs"></i> About</a>
+                            
+                            <!-- Login/Register -->
+                            {% if user.is_authenticated %}
+                            <div class="relative group">
+                                <button class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1">
+                                    <i class="fa-solid fa-user-circle text-sm"></i> 
+                                    <span class="hidden lg:inline">{{ user.username }}</span>
+                                    <i class="fa fa-chevron-down text-xs ml-1"></i>
+                                </button>
+                                <div class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all pointer-events-none group-hover:pointer-events-auto">
+                                    <a href="/admin/" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">
+                                        <i class="fa-solid fa-gauge text-xs mr-2"></i>Admin Panel
+                                    </a>
+                                    <a href="/admin/logout/" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">
+                                        <i class="fa-solid fa-right-from-bracket text-xs mr-2"></i>Logout
+                                    </a>
+                                </div>
+                            </div>
+                            {% else %}
+                            <a href="/admin/" class="px-4 py-2 bg-brand-green text-white rounded-lg font-semibold hover:bg-green-600 transition flex items-center gap-2">
+                                <i class="fa-solid fa-right-to-bracket text-xs"></i> 
+                                Login
+                            </a>
+                            {% endif %}
                         </div>
                     </div>
                 </nav>
