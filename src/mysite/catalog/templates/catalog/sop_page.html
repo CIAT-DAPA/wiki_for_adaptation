@@ -56,7 +56,7 @@
     {% if page.definition %}
     <section id="definition" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">Definition</h2>
-      <div class="prose prose-sm max-w-none">{{ page.definition|safe }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.definition|richtext }}</div>
     </section>
     {% endif %}
 
@@ -65,7 +65,7 @@
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">
         <i class="fas fa-database text-gray-700 mr-2"></i>Data Sources
       </h2>
-      <div class="prose prose-sm max-w-none">{{ page.data_sources|safe }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.data_sources|richtext }}</div>
     </section>
     {% endif %}
 
@@ -102,7 +102,7 @@
         <h3 class="text-base font-semibold text-gray-900 mb-2 flex items-center">
           <i class="fas fa-wrench text-gray-600 mr-2"></i>Technical Capacity
         </h3>
-        <div class="prose prose-sm max-w-none text-gray-700">{{ page.technical_capacity|safe }}</div>
+        <div class="prose prose-sm max-w-none text-gray-700">{{ page.technical_capacity|richtext }}</div>
       </section>
       {% endif %}
     </section>
@@ -110,49 +110,49 @@
     {% if page.activities_and_steps %}
     <section id="activities" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">Activities and Steps</h2>
-      <div class="prose prose-sm max-w-none">{{ page.activities_and_steps|safe }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.activities_and_steps|richtext }}</div>
     </section>
     {% endif %}
 
     {% if page.options_enhancing_robustness %}
     <section id="robustness" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">Options for Enhancing Robustness</h2>
-      <div class="prose prose-sm max-w-none">{{ page.options_enhancing_robustness|safe }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.options_enhancing_robustness|richtext }}</div>
     </section>
     {% endif %}
 
     {% if page.options_reducing_costs %}
     <section id="costs" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">Options for Reducing Costs</h2>
-      <div class="prose prose-sm max-w-none">{{ page.options_reducing_costs|safe }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.options_reducing_costs|richtext }}</div>
     </section>
     {% endif %}
 
     {% if page.available_tools_and_code %}
     <section id="tools" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">Available Tools and Code</h2>
-      <div class="prose prose-sm max-w-none">{{ page.available_tools_and_code|safe }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.available_tools_and_code|richtext }}</div>
     </section>
     {% endif %}
 
     {% if page.references %}
     <section id="references" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">References</h2>
-      <div class="prose prose-sm max-w-none">{{ page.references|safe }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.references|richtext }}</div>
     </section>
     {% endif %}
 
     {% if page.visual_content %}
     <section id="visual" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">Visual Content</h2>
-      <div class="prose prose-sm max-w-none">{{ page.visual_content|safe }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.visual_content|richtext }}</div>
     </section>
     {% endif %}
 
     {% if page.flagship_method_status %}
     <section id="flagship" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">Flagship Method Status</h2>
-      <div class="prose prose-sm max-w-none">{{ page.flagship_method_status|safe }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.flagship_method_status|richtext }}</div>
     </section>
     {% endif %}
 {% endblock %}

@@ -272,3 +272,12 @@ def log_page_delete(sender, instance: Page, **kwargs):
             changed_by=None,
             fields={"title": instance.title, "id": instance.id},
         )
+
+
+# Register models with django-auditlog for field-level change tracking
+from auditlog.registry import auditlog
+
+auditlog.register(IndicatorPage)
+auditlog.register(MetricPage)
+auditlog.register(MethodPage)
+auditlog.register(SOPPage)

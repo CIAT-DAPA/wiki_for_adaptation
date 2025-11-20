@@ -34,7 +34,7 @@
     {% if page.description %}
     <section id="description" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">Description</h2>
-      <div class="prose prose-sm max-w-none">{{ page.description|safe }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.description|richtext }}</div>
     </section>
     {% endif %}
 
