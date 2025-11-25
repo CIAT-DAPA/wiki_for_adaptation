@@ -8,7 +8,7 @@ from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
 from search import views as search_views
-from mysite.oidc_views import oidc_logout_view
+from mysite.oidc_views import oidc_logout_view, wagtail_login_redirect
 
 urlpatterns = [
     path("django-admin/", admin.site.urls),
@@ -22,9 +22,10 @@ urlpatterns = [
     path("impact-pathways/guidance/", TemplateView.as_view(template_name="guidance_project_vs_policy.html"), name="guidance_project_vs_policy"),
     path("about/", TemplateView.as_view(template_name="about.html"), name="about"),
     path("oidc/", include("mozilla_django_oidc.urls")),
+    path("admin/login/", wagtail_login_redirect, name="wagtailadmin_login"),  # Override Wagtail login with OIDC
     path("admin/logout/", oidc_logout_view, name="wagtailadmin_logout"),  # Override Wagtail logout
     path("logout/", oidc_logout_view, name="oidc_logout"),  # Custom OIDC logout
-    path("admin/", include(wagtailadmin_urls)),  # Include wagtail admin after logout override
+    path("admin/", include(wagtailadmin_urls)),
 ]
 
 

@@ -76,7 +76,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
-    "mozilla_django_oidc.middleware.SessionRefresh",  # OIDC session management
 ]
 
 ROOT_URLCONF = "mysite.urls"
@@ -198,6 +197,11 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10_000
 
 WAGTAIL_SITE_NAME = "mysite"
 
+# Enable user management in Wagtail Admin
+WAGTAIL_USER_EDIT_FORM = 'wagtail.users.forms.UserEditForm'
+WAGTAIL_USER_CREATION_FORM = 'wagtail.users.forms.UserCreationForm'
+WAGTAIL_USER_CUSTOM_FIELDS = []  # Can add custom fields later if needed
+
 # Search
 # https://docs.wagtail.org/en/stable/topics/search/backends.html
 WAGTAILSEARCH_BACKENDS = {
@@ -248,5 +252,4 @@ OIDC_CALLBACK_PATH = "/oidc/callback/"  # Default callback path
 
 # Authentication redirect URLs
 OIDC_AUTHENTICATION_CALLBACK_URL = "oidc_authentication_callback"
-
 
