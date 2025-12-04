@@ -44,9 +44,6 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
         logger.info(f"User created: {user.username} (staff={user.is_staff}, superuser={user.is_superuser})")
         logger.info(f"User needs to be assigned to a group by an administrator in Wagtail Admin")
         
-        # Add to basic OIDC Users group for tracking
-        self._ensure_wagtail_access(user)
-        
         return user
 
     def update_user(self, user, claims):
@@ -75,7 +72,7 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
             user.is_staff = True
             user.is_superuser = True
         # Users in any other admin group get staff access only
-        elif user_groups & {'Reviewers', 'Content Developers', 'OIDC Users'}:
+        elif user_groups & {'Reviewers', 'Content Developers'}:
             user.is_staff = True
             user.is_superuser = False
         # Users not in any group have no access
@@ -87,22 +84,5 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
         logger.debug(f"User updated: {user.username} (staff={user.is_staff}, superuser={user.is_superuser})")
         logger.debug(f"User groups: {list(user_groups)}")
         
-        # Ensure user is in OIDC Users group
-        self._ensure_wagtail_access(user)
-        
         return user
-    
-    def _ensure_wagtail_access(self, user):
-        """Add user to basic OIDC Users group for tracking."""
-        from django.contrib.auth.models import Group
-        
-        # Get or create a default group for OIDC users (for tracking purposes)
-        oidc_group, created = Group.objects.get_or_create(name='OIDC Users')
-        if created:
-            logger.info(f"Created 'OIDC Users' group")
-        
-        # Add user to group if not already a member
-        if not user.groups.filter(id=oidc_group.id).exists():
-            user.groups.add(oidc_group)
-            logger.debug(f"Added {user.username} to 'OIDC Users' group")
 
