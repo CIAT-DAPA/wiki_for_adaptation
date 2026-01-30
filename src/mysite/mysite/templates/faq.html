@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Frequently Asked Questions{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Badge -->
+    <div class="mb-4">
+        <span class="inline-block bg-orange-500 text-white text-xs font-bold uppercase px-3 py-1 rounded">FAQ</span>
+    </div>
+
+    <!-- Title -->
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h1>
+    <p class="text-lg text-gray-600 mb-12">Common questions about the Adaptation Wiki.</p>
+
+    <!-- FAQ Items -->
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm divide-y divide-gray-200">
+        <details class="p-6 group">
+            <summary class="flex items-center justify-between cursor-pointer text-lg font-semibold text-gray-900">
+                What is the difference between an Indicator and a Metric?
+                <i class="fa fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <p class="mt-4 text-gray-600">An Indicator represents broad climate system changes or phenomena (e.g., Sea Level Rise), while a Metric is a specific quantitative measure used to track that indicator (e.g., Global Mean Sea Level measured in millimeters). One indicator can have multiple metrics measuring different aspects of the same phenomenon.</p>
+        </details>
+
+        <details class="p-6 group">
+            <summary class="flex items-center justify-between cursor-pointer text-lg font-semibold text-gray-900">
+                What are Methods and how do they relate to Metrics?
+                <i class="fa fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <p class="mt-4 text-gray-600">Methods describe different approaches or techniques for measuring a metric. Each metric can have multiple methods, each with its own advantages, limitations, and use cases. Methods help you choose the most appropriate measurement approach for your specific context.</p>
+        </details>
+
+        <details class="p-6 group">
+            <summary class="flex items-center justify-between cursor-pointer text-lg font-semibold text-gray-900">
+                What are SOPs and why are they important?
+                <i class="fa fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <p class="mt-4 text-gray-600">SOPs (Standard Operating Procedures) are specific data products with detailed technical specifications for data collection and analysis. They ensure consistency and reproducibility in climate measurements across different projects and organizations. Each SOP provides specifications like units, frequency, geographic scale, and technical capacity requirements.</p>
+        </details>
+
+        <details class="p-6 group">
+            <summary class="flex items-center justify-between cursor-pointer text-lg font-semibold text-gray-900">
+                How is the content organized hierarchically?
+                <i class="fa fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <p class="mt-4 text-gray-600">The wiki follows a three-level hierarchy: Indicators (broad phenomena) → Metrics (specific measures) → SOPs (data products). This structure helps you navigate from general concepts to specific implementation details, making it easy to find both high-level information and technical specifications.</p>
+        </details>
+
+        <details class="p-6 group">
+            <summary class="flex items-center justify-between cursor-pointer text-lg font-semibold text-gray-900">
+                Who can contribute content to this wiki?
+                <i class="fa fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <p class="mt-4 text-gray-600">The wiki welcomes contributions from climate scientists, researchers, and practitioners. If you're interested in becoming an editor, visit the "Become an editor" page to learn about requirements and submit an application. All contributions are reviewed by our editorial team to ensure accuracy and scientific rigor.</p>
+        </details>
+
+        <details class="p-6 group">
+            <summary class="flex items-center justify-between cursor-pointer text-lg font-semibold text-gray-900">
+                How often is the content updated?
+                <i class="fa fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <p class="mt-4 text-gray-600">The wiki is continuously updated as new research emerges and measurement techniques evolve. Each entry shows its publication and last update dates. Our team of editors regularly reviews and updates content to ensure accuracy and incorporate the latest scientific findings.</p>
+        </details>
+
+        <details class="p-6 group">
+            <summary class="flex items-center justify-between cursor-pointer text-lg font-semibold text-gray-900">
+                Can I download or export data from the wiki?
+                <i class="fa fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <p class="mt-4 text-gray-600">While the wiki provides comprehensive information about indicators, metrics, and SOPs, it does not directly host climate datasets. However, each SOP entry includes references to data sources and available tools where you can access actual data. Some entries also provide links to code repositories and data portals.</p>
+        </details>
+
+        <details class="p-6 group">
+            <summary class="flex items-center justify-between cursor-pointer text-lg font-semibold text-gray-900">
+                What should I do if I find an error or outdated information?
+                <i class="fa fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+            </summary>
+            <p class="mt-4 text-gray-600">Please use our "Feedback/Corrections" form to report any errors, outdated information, or suggest improvements. Our editorial team reviews all feedback and makes updates as needed. Your input helps us maintain the quality and accuracy of the wiki.</p>
+        </details>
+    </div>
+</div>
+{% endblock %}

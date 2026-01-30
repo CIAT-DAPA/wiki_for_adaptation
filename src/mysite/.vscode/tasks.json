@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Django: check and migrate",
+			"type": "shell",
+			"command": "\"d:\\OneDrive - CGIAR\\Documents\\GitHub\\wiki_for_adaptation\\env\\Scripts\\python.exe\" manage.py check; \"d:\\OneDrive - CGIAR\\Documents\\GitHub\\wiki_for_adaptation\\env\\Scripts\\python.exe\" manage.py migrate",
+			"problemMatcher": [
+				"$eslint - stylish"
+			],
+			"group": "build"
+		}
+	]
+}

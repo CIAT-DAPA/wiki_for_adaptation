@@ -1,0 +1,43 @@
+{% load wagtailcore_tags %}
+
+<section class="w-full bg-gray-100 py-12 md:py-16">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col items-center justify-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center">Adaptation Tracking Wiki</h1>
+        <p class="text-base md:text-lg text-gray-600 mb-3 md:mb-4 text-center max-w-3xl leading-relaxed">A comprehensive knowledge base of indicators and methods for assessing climate change adaptation. It is designed to standardize measurements and provide clear, rigorous information on the effectiveness and impact of adaptation efforts, enabling policymakers and practitioners to track, compare, and accelerate effective climate action.</p>
+        <p class="text-sm text-gray-600 mb-6 md:mb-8 text-center">
+            <a href="/wiki-instructions" class="text-brand-green hover:underline font-medium">Learn how to use the Wiki here</a>
+        </p>
+        <form action="/search/" method="get" class="w-full max-w-xl flex items-center gap-2 mb-4 md:mb-6">
+            <input type="text" name="query" placeholder="Search indicators, metrics, or SOPs..." class="flex-1 px-4 py-2 md:py-3 rounded-lg border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-green text-sm md:text-base" />
+        </form>
+        <div class="flex flex-col sm:flex-row gap-3 md:gap-4">
+            <a href="/search/" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-100 font-medium flex items-center justify-center gap-2 text-sm md:text-base"><i class="fa fa-filter"></i> Advanced Search</a>
+            <a href="/about" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-100 font-medium text-sm md:text-base text-center">Learn More</a>
+        </div>
+    </div>
+</section>
+
+<section class="w-full py-8 md:py-12 bg-white">
+    <div class="max-w-7xl mx-auto px-4">
+        <h2 class="text-2xl md:text-2xl font-bold text-gray-900 mb-2 text-center">Latest Wiki Entries</h2>
+        <p class="text-sm md:text-base text-gray-600 mb-6 md:mb-8 text-center">Recently added and updated content</p>
+        <div class="grid md:grid-cols-2 gap-6 md:gap-8 mb-6 md:mb-8">
+            {% for entry in latest_entries %}
+            <a href="{% pageurl entry %}" class="block bg-white border border-gray-200 rounded-lg shadow-sm p-4 md:p-5 hover:shadow-md transition-all group">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="inline-block bg-blue-500 text-white text-xs font-bold uppercase px-2 py-1 rounded">indicator</span>
+                    <span class="text-gray-500 text-xs">{{ entry.first_published_at|date:"m/d/Y" }}</span>
+                </div>
+                <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-1">{{ entry.title }}</h3>
+                {% if entry.description %}
+                <p class="text-sm text-gray-600 mb-2 line-clamp-2">{{ entry.description|striptags|truncatewords:20 }}</p>
+                {% endif %}
+                <span class="text-blue-500 text-xs font-semibold group-hover:underline flex items-center gap-1">Read more <i class="fa fa-arrow-right text-xs"></i></span>
+            </a>
+            {% endfor %}
+        </div>
+        <div class="flex justify-center">
+            <a href="/search/?category=indicator" class="px-5 md:px-6 py-2 md:py-2.5 bg-brand-green text-white rounded-lg hover:bg-green-600 font-medium text-sm md:text-base">View All Indicators</a>
+        </div>
+    </div>
+</section>

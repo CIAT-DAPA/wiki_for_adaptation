@@ -1,0 +1,93 @@
+{% extends "catalog/catalog_base.html" %}
+{% load wagtailcore_tags %}
+
+{% block sidebar_contents %}
+  <li><a href="#description" class="text-gray-700 hover:text-brand-green">Description</a></li>
+  <li><a href="#properties" class="text-gray-700 hover:text-brand-green">Properties</a></li>
+  {% with metrics=page.get_children.live.specific %}
+    {% if metrics %}
+    <li>
+      <button class="flex items-center justify-between w-full text-gray-700 hover:text-brand-green font-medium" onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('i').classList.toggle('fa-chevron-down'); this.querySelector('i').classList.toggle('fa-chevron-up');">
+        <span>Related Metrics</span>
+        <i class="fas fa-chevron-down text-xs"></i>
+      </button>
+      <ul class="ml-4 mt-2 space-y-1.5">
+        {% for metric in metrics %}
+        <li><a href="#metric-{{ forloop.counter }}" class="text-gray-600 hover:text-brand-green text-xs">{{ metric.title|truncatewords:4 }}</a></li>
+        {% endfor %}
+      </ul>
+    </li>
+    {% endif %}
+  {% endwith %}
+{% endblock %}
+
+{% block article_content %}
+    <header class="mb-6 pb-4 border-b-2 border-gray-200">
+      <span class="inline-block bg-blue-500 text-white text-xs font-bold uppercase px-3 py-1 rounded mb-2">Indicator</span>
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
+      <p class="text-gray-500 text-sm flex items-center gap-4">
+        <span><i class="fas fa-user text-gray-400 mr-1"></i> {{ page.entry_author|default:"Unknown" }}</span>
+        <span><i class="fas fa-calendar text-gray-400 mr-1"></i> {{ page.first_published_at|date:"m/d/Y" }}</span>
+      </p>
+    </header>
+
+    {% if page.description %}
+    <section id="description" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-3">Description</h2>
+      <div class="prose prose-sm max-w-none">{{ page.description|richtext }}</div>
+    </section>
+    {% endif %}
+
+    {% if page.dimension or page.type %}
+    <section id="properties" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
+      <h2 class="text-2xl font-semibold text-gray-900 mb-4">Properties</h2>
+      
+      {% if page.dimension %}
+      <div class="mb-4">
+        <h3 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+          <i class="fas fa-tag text-gray-500 mr-2"></i>Dimension
+        </h3>
+        <p class="text-gray-900">{{ page.dimension }}</p>
+      </div>
+      {% endif %}
+
+      {% if page.type %}
+      <div>
+        <h3 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+          <i class="fas fa-tag text-gray-500 mr-2"></i>Type
+        </h3>
+        <p class="text-gray-900">{{ page.type }}</p>
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {% with metrics=page.get_children.live.specific %}
+      {% if metrics %}
+      <section class="my-8">
+        <h2 class="text-3xl font-bold text-gray-900 mb-2 flex items-center">
+          <i class="fas fa-chart-line text-gray-700 mr-2"></i>Related Metrics
+        </h2>
+        <p class="text-gray-600 mb-6">Metrics used to measure this indicator</p>
+        <div class="space-y-4">
+          {% for metric in metrics %}
+          <a id="metric-{{ forloop.counter }}" href="{% pageurl metric %}" class="block bg-white border border-gray-200 rounded-lg shadow-sm p-5 hover:shadow-md hover:border-brand-green transition-all group scroll-mt-20">
+            <div class="flex items-start justify-between">
+              <div class="flex-1">
+                <span class="inline-block bg-brand-green text-white text-xs font-bold uppercase px-2 py-1 rounded mb-2">Metric</span>
+                <h3 class="text-lg font-semibold text-gray-900 group-hover:text-brand-green transition-colors mb-2">
+                  {{ metric.title }}
+                </h3>
+                {% if metric.description %}
+                <p class="text-sm text-gray-600">{{ metric.description|striptags|truncatewords:25 }}</p>
+                {% endif %}
+              </div>
+              <i class="fas fa-arrow-right text-gray-400 group-hover:text-brand-green transition-colors ml-4"></i>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+    {% endwith %}
+{% endblock %}
