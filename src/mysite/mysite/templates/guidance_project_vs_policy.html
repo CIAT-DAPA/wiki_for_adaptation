@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Guidance: Project vs Policy Level{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Badge -->
+    <div class="mb-4">
+        <span class="inline-block bg-blue-500 text-white text-xs font-bold uppercase px-3 py-1 rounded">Impact Pathways</span>
+    </div>
+
+    <!-- Title -->
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">Project Level vs Policy Level</h1>
+    <p class="text-lg text-gray-600 mb-12">Impact pathways and indicators differ significantly depending on the scale of intervention. Understanding these differences is crucial for effective monitoring and evaluation.</p>
+
+    <!-- Project Level Guidance -->
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-8 mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Project Level Guidance</h2>
+        <p class="text-gray-600 mb-6">Best practices for project-scale impact pathways</p>
+        
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Focus Areas</h3>
+            <ul class="space-y-2 text-gray-700">
+                <li>Clearly defined beneficiaries and target areas</li>
+                <li>Specific, measurable outputs that can be monitored regularly</li>
+                <li>Direct linkages between activities and outcomes</li>
+                <li>Baseline data collection for impact assessment</li>
+                <li>Community participation in indicator selection</li>
+            </ul>
+        </div>
+        
+        <div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Recommended Indicators</h3>
+            <ul class="space-y-2 text-gray-700">
+                <li>Number of beneficiaries reached</li>
+                <li>Infrastructure built or improved (units, area, capacity)</li>
+                <li>Training participants and knowledge gained</li>
+                <li>Changes in vulnerability or exposure at local level</li>
+                <li>Adoption rates of adaptation measures</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Policy Level Guidance -->
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Policy Level Guidance</h2>
+        <p class="text-gray-600 mb-6">Best practices for policy-scale impact pathways</p>
+        
+        <div class="mb-6">
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Focus Areas</h3>
+            <ul class="space-y-2 text-gray-700">
+                <li>Systems-level changes and enabling environment</li>
+                <li>Integration across sectors and governance levels</li>
+                <li>Long-term capacity development and institutional change</li>
+                <li>Policy coherence and mainstreaming metrics</li>
+                <li>National level climate risk and vulnerability trends</li>
+            </ul>
+        </div>
+        
+        <div>
+            <h3 class="text-xl font-semibold text-gray-900 mb-3">Recommended Indicators</h3>
+            <ul class="space-y-2 text-gray-700">
+                <li>Number of policies integrating climate adaptation</li>
+                <li>Budget allocations for adaptation across sectors</li>
+                <li>National-level risk reduction metrics</li>
+                <li>Institutional capacity indices</li>
+                <li>Climate Information Integration in planning processes</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "wagtailadmin/base.html" %}
+{% load i18n wagtailadmin_tags %}
+
+{% block titletag %}{% trans "Detailed Site History" %}{% endblock %}
+
+{% block content %}
+    <header class="header nice-padding hasform">
+        <div class="row">
+            <div class="left">
+                <div class="col">
+                    <h1 class="icon icon-doc-empty-inverse">{% trans "Detailed Site History" %}</h1>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="nice-padding">
+        <p>{% trans "This page shows a detailed audit log of all changes to catalog pages, including field-level modifications." %}</p>
+        
+        {% if logs %}
+            <table class="listing">
+                <thead>
+                    <tr>
+                        <th>{% trans "Timestamp" %}</th>
+                        <th>{% trans "User" %}</th>
+                        <th>{% trans "Action" %}</th>
+                        <th>{% trans "Page/Object" %}</th>
+                        <th>{% trans "Type" %}</th>
+                        <th>{% trans "Field Changes" %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td>{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                            <td>{{ log.user|default:"System" }}</td>
+                            <td>
+                                <span class="w-status {% if log.action == 'Create' or log.action == 'create' %}w-status--primary{% elif log.action == 'Delete' or log.action == 'delete' %}w-status--critical{% else %}w-status--label{% endif %}">
+                                    {{ log.action }}
+                                </span>
+                            </td>
+                            <td>{{ log.page_title }}</td>
+                            <td><code class="w-text-monospace">{{ log.content_type }}</code></td>
+                            <td>
+                                {% if log.changes %}
+                                    <details>
+                                        <summary style="cursor: pointer; color: #007d7e; font-weight: 500; font-size: 1.1em;">
+                                            {% trans "View changes" %} ({{ log.changes|length }} field{{ log.changes|length|pluralize }})
+                                        </summary>
+                                        <div style="margin-top: 10px;">
+                                            {% for field, change in log.changes.items %}
+                                                <div style="margin-bottom: 15px; padding: 14px; background: rgba(0, 125, 126, 0.08); border-left: 3px solid #007d7e; border-radius: 3px;">
+                                                    <strong style="display: block; margin-bottom: 10px; font-size: 1.15em;">{{ field|title }}:</strong>
+                                                    {% if change.0 %}
+                                                        <div style="margin-bottom: 8px; padding: 12px; background: rgba(220, 53, 69, 0.1); border-radius: 3px;">
+                                                            <strong style="color: #dc3545; font-size: 1.05em;">{% trans "Old:" %}</strong>
+                                                            <span style="font-family: monospace; font-size: 1.05em; word-break: break-word; white-space: pre-wrap;">{{ change.0|striptags }}</span>
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if change.1 %}
+                                                        <div style="padding: 12px; background: rgba(40, 167, 69, 0.1); border-radius: 3px;">
+                                                            <strong style="color: #28a745; font-size: 1.05em;">{% trans "New:" %}</strong>
+                                                            <span style="font-family: monospace; font-size: 1.05em; word-break: break-word; white-space: pre-wrap;">{{ change.1|striptags }}</span>
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </details>
+                                {% else %}
+                                    <span style="color: #999;">{% trans "No field details" %}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>{% trans "No audit log entries found." %}</p>
+        {% endif %}
+    </div>
+{% endblock %}
