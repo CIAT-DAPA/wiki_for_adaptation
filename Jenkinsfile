@@ -5,11 +5,10 @@ pipeline {
     agent any
 
     environment {
-        user = credentials('wiki_adaptation_user')
-        host = credentials('wiki_adaptation_host')
-        name = credentials('wiki_adaptation_name')
-        ssh_key = credentials('wiki_adaptation_key')
-        app_path = credentials('wiki_adaptation_app_path')
+        user = credentials('track_adapt_wiki_user')
+        host = credentials('track_adapt_wiki_host')
+        name = credentials('track_adapt_wiki_host')
+        ssh_key = credentials('track_adapt_wiki')
     }
 
     stages {
@@ -31,7 +30,7 @@ pipeline {
                 script {
                     try {
                         sshCommand remote: remote, command: """
-                            cd ${app_path}
+                            cd /opt/goodall/
                             git fetch --all
                             git checkout main
                             git pull origin main
@@ -49,8 +48,8 @@ pipeline {
                 script {
                     try {
                         sshCommand remote: remote, command: """
-                            cd ${app_path}/src/mysite
-                            source ../../../env/bin/activate
+                            cd /opt/goodall/src/mysite
+                            conda activate goodall
                             pip install -r requirements.txt
                         """
                     } catch (Exception e) {
@@ -66,8 +65,8 @@ pipeline {
                 script {
                     try {
                         sshCommand remote: remote, command: """
-                            cd ${app_path}/src/mysite
-                            source ../../../env/bin/activate
+                            cd /opt/goodall/src/mysite
+                            conda activate goodall
                             python manage.py migrate --noinput
                         """
                     } catch (Exception e) {
@@ -83,8 +82,8 @@ pipeline {
                 script {
                     try {
                         sshCommand remote: remote, command: """
-                            cd ${app_path}/src/mysite
-                            source ../../../env/bin/activate
+                            cd /opt/goodall/src/mysite
+                            conda activate goodall
                             python manage.py collectstatic --noinput
                         """
                     } catch (Exception e) {
