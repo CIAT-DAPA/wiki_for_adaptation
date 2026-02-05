@@ -100,7 +100,7 @@ pipeline {
         stage('Restart Application') {
             steps {
                 script {
-                    sshCommand remote: remote, command: """
+                    sshCommand remote: remote, failOnError: false, command: """
                         cd /opt/goodall/wiki_for_adaptation/src/mysite
                         source /opt/miniforge/etc/profile.d/conda.sh
                         conda activate goodall
