@@ -100,35 +100,32 @@ pipeline {
         stage('Restart Application') {
             steps {
                 script {
-                    try {
-                        sshCommand remote: remote, command: """
-                            cd /opt/goodall/wiki_for_adaptation/src/mysite
-                            source /opt/miniforge/etc/profile.d/conda.sh
-                            conda activate goodall
-                            
-                            # Stop Gunicorn if running
-                            pkill -f 'gunicorn.*mysite.wsgi' || true
-                            sleep 3
-                            
-                            # Create logs directory if not exists
-                            mkdir -p /opt/goodall/wiki_for_adaptation/logs
-                            
-                            # Start Gunicorn as daemon
-                            gunicorn mysite.wsgi:application \\
-                                --bind 0.0.0.0:8080 \\
-                                --workers 4 \\
-                                --timeout 120 \\
-                                --access-logfile /opt/goodall/wiki_for_adaptation/logs/gunicorn-access.log \\
-                                --error-logfile /opt/goodall/wiki_for_adaptation/logs/gunicorn-error.log \\
-                                --pid /opt/goodall/wiki_for_adaptation/gunicorn.pid \\
-                                --daemon
-                            
-                            echo "Gunicorn deployment command executed"
-                        """
-                    } catch (Exception e) {
-                        echo "Restart Error: ${e.message}"
-                        error("Failed to restart application: ${e.message}")
-                    }
+                    sshCommand remote: remote, command: """
+                        cd /opt/goodall/wiki_for_adaptation/src/mysite
+                        source /opt/miniforge/etc/profile.d/conda.sh
+                        conda activate goodall
+                        
+                        # Stop Gunicorn if running
+                        pkill -f 'gunicorn.*mysite.wsgi' || true
+                        sleep 3
+                        
+                        # Create logs directory if not exists
+                        mkdir -p /opt/goodall/wiki_for_adaptation/logs
+                        
+                        # Start Gunicorn with nohup in background
+                        nohup gunicorn mysite.wsgi:application \\
+                            --bind 0.0.0.0:8080 \\
+                            --workers 4 \\
+                            --timeout 120 \\
+                            --access-logfile /opt/goodall/wiki_for_adaptation/logs/gunicorn-access.log \\
+                            --error-logfile /opt/goodall/wiki_for_adaptation/logs/gunicorn-error.log \\
+                            --pid /opt/goodall/wiki_for_adaptation/gunicorn.pid \\
+                            > /opt/goodall/wiki_for_adaptation/logs/nohup.out 2>&1 &
+                        
+                        sleep 2
+                        echo "Gunicorn restart command executed"
+                    """
+                    echo "Deployment completed"
                 }
             }
         }
