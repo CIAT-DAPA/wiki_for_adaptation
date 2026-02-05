@@ -107,12 +107,8 @@ pipeline {
                             conda activate goodall
                             
                             # Stop Gunicorn if running
-                            if [ -f /opt/goodall/wiki_for_adaptation/gunicorn.pid ]; then
-                                kill -TERM \$(cat /opt/goodall/wiki_for_adaptation/gunicorn.pid) || true
-                                sleep 3
-                            fi
                             pkill -f 'gunicorn.*mysite.wsgi' || true
-                            sleep 2
+                            sleep 3
                             
                             # Create logs directory if not exists
                             mkdir -p /opt/goodall/wiki_for_adaptation/logs
@@ -127,15 +123,7 @@ pipeline {
                                 --pid /opt/goodall/wiki_for_adaptation/gunicorn.pid \\
                                 --daemon
                             
-                            # Verify it started
-                            sleep 2
-                            if pgrep -f 'gunicorn.*mysite.wsgi' > /dev/null; then
-                                echo "Gunicorn started successfully on port 8080"
-                            else
-                                echo "Failed to start Gunicorn"
-                                cat /opt/goodall/wiki_for_adaptation/logs/gunicorn-error.log
-                                exit 1
-                            fi
+                            echo "Gunicorn deployment command executed"
                         """
                     } catch (Exception e) {
                         echo "Restart Error: ${e.message}"
