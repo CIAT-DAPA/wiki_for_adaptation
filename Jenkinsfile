@@ -49,6 +49,7 @@ pipeline {
                     try {
                         sshCommand remote: remote, command: """
                             cd /opt/goodall/wiki_for_adaptation/src/mysite
+                            source /opt/miniforge/etc/profile.d/conda.sh
                             conda activate goodall
                             pip install -r requirements.txt
                         """
@@ -66,6 +67,7 @@ pipeline {
                     try {
                         sshCommand remote: remote, command: """
                             cd /opt/goodall/wiki_for_adaptation/src/mysite
+                            source /opt/miniforge/etc/profile.d/conda.sh
                             conda activate goodall
                             python manage.py migrate --noinput
                         """
@@ -83,6 +85,7 @@ pipeline {
                     try {
                         sshCommand remote: remote, command: """
                             cd /opt/goodall/wiki_for_adaptation/src/mysite
+                            source /opt/miniforge/etc/profile.d/conda.sh
                             conda activate goodall
                             python manage.py collectstatic --noinput
                         """
@@ -100,6 +103,7 @@ pipeline {
                     try {
                         sshCommand remote: remote, command: """
                             cd /opt/goodall/wiki_for_adaptation/src/mysite
+                            source /opt/miniforge/etc/profile.d/conda.sh
                             conda activate goodall
                             
                             # Stop Gunicorn if running
