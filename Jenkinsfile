@@ -30,7 +30,7 @@ pipeline {
                 script {
                     try {
                         sshCommand remote: remote, command: """
-                            cd /opt/goodall/
+                            cd /opt/goodall/wiki_for_adaptation
                             git fetch --all
                             git checkout main
                             git pull origin main
@@ -48,7 +48,7 @@ pipeline {
                 script {
                     try {
                         sshCommand remote: remote, command: """
-                            cd /opt/goodall/src/mysite
+                            cd /opt/goodall/wiki_for_adaptation/src/mysite
                             conda activate goodall
                             pip install -r requirements.txt
                         """
@@ -65,7 +65,7 @@ pipeline {
                 script {
                     try {
                         sshCommand remote: remote, command: """
-                            cd /opt/goodall/src/mysite
+                            cd /opt/goodall/wiki_for_adaptation/src/mysite
                             conda activate goodall
                             python manage.py migrate --noinput
                         """
@@ -82,7 +82,7 @@ pipeline {
                 script {
                     try {
                         sshCommand remote: remote, command: """
-                            cd /opt/goodall/src/mysite
+                            cd /opt/goodall/wiki_for_adaptation/src/mysite
                             conda activate goodall
                             python manage.py collectstatic --noinput
                         """
@@ -99,8 +99,39 @@ pipeline {
                 script {
                     try {
                         sshCommand remote: remote, command: """
-                            # Restart Apache server
-                            sudo systemctl reload apache2
+                            cd /opt/goodall/wiki_for_adaptation/src/mysite
+                            conda activate goodall
+                            
+                            # Stop Gunicorn if running
+                            if [ -f /opt/goodall/wiki_for_adaptation/gunicorn.pid ]; then
+                                kill -TERM \$(cat /opt/goodall/wiki_for_adaptation/gunicorn.pid) || true
+                                sleep 3
+                            fi
+                            pkill -f 'gunicorn.*mysite.wsgi' || true
+                            sleep 2
+                            
+                            # Create logs directory if not exists
+                            mkdir -p /opt/goodall/wiki_for_adaptation/logs
+                            
+                            # Start Gunicorn as daemon
+                            gunicorn mysite.wsgi:application \\
+                                --bind 0.0.0.0:8080 \\
+                                --workers 4 \\
+                                --timeout 120 \\
+                                --access-logfile /opt/goodall/wiki_for_adaptation/logs/gunicorn-access.log \\
+                                --error-logfile /opt/goodall/wiki_for_adaptation/logs/gunicorn-error.log \\
+                                --pid /opt/goodall/wiki_for_adaptation/gunicorn.pid \\
+                                --daemon
+                            
+                            # Verify it started
+                            sleep 2
+                            if pgrep -f 'gunicorn.*mysite.wsgi' > /dev/null; then
+                                echo "Gunicorn started successfully on port 8080"
+                            else
+                                echo "Failed to start Gunicorn"
+                                cat /opt/goodall/wiki_for_adaptation/logs/gunicorn-error.log
+                                exit 1
+                            fi
                         """
                     } catch (Exception e) {
                         echo "Restart Error: ${e.message}"
