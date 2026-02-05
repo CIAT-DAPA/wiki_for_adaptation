@@ -102,8 +102,6 @@ pipeline {
                 script {
                     sshCommand remote: remote, failOnError: false, command: """
                         cd /opt/goodall/wiki_for_adaptation/src/mysite
-                        source /opt/miniforge/etc/profile.d/conda.sh
-                        conda activate goodall
                         
                         # Stop Gunicorn if running
                         pkill -f 'gunicorn.*mysite.wsgi' || true
@@ -112,17 +110,17 @@ pipeline {
                         # Create logs directory if not exists
                         mkdir -p /opt/goodall/wiki_for_adaptation/logs
                         
-                        # Start Gunicorn with nohup in background
-                        nohup gunicorn mysite.wsgi:application \\
+                        # Start Gunicorn as daemon using full path
+                        /opt/miniforge/envs/goodall/bin/gunicorn mysite.wsgi:application \\
                             --bind 0.0.0.0:8080 \\
                             --workers 4 \\
                             --timeout 120 \\
                             --access-logfile /opt/goodall/wiki_for_adaptation/logs/gunicorn-access.log \\
                             --error-logfile /opt/goodall/wiki_for_adaptation/logs/gunicorn-error.log \\
                             --pid /opt/goodall/wiki_for_adaptation/gunicorn.pid \\
-                            > /opt/goodall/wiki_for_adaptation/logs/nohup.out 2>&1 &
+                            --daemon
                         
-                        sleep 2
+                        sleep 3
                         echo "Gunicorn restart command executed"
                     """
                     echo "Deployment completed"
