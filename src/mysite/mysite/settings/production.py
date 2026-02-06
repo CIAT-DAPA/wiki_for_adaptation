@@ -12,6 +12,7 @@ ALLOWED_HOSTS = [
 # Trust X-Forwarded-Proto header from reverse proxy
 # CRITICAL: This tells Django to build redirect URIs with https://
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
 # Wagtail base URL for production (MUST be HTTPS)
 WAGTAILADMIN_BASE_URL = "https://trackadapt.org"
