@@ -13,6 +13,9 @@ ALLOWED_HOSTS = [
 # CRITICAL: This tells Django to build redirect URIs with https://
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
+# Wagtail base URL for production (MUST be HTTPS)
+WAGTAILADMIN_BASE_URL = "https://trackadapt.org"
+
 # OIDC settings for production
 OIDC_VERIFY_SSL = True  # Verify SSL certificates in production
 
