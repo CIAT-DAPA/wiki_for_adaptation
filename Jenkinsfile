@@ -32,6 +32,7 @@ pipeline {
                         sshCommand remote: remote, command: """
                             cd /opt/goodall/wiki_for_adaptation
                             git fetch --all
+                            git stash save "Auto-stash before deployment" || true
                             git checkout main
                             git pull origin main
                         """
