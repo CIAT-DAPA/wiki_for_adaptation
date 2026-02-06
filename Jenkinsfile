@@ -100,28 +100,10 @@ pipeline {
         stage('Restart Application') {
             steps {
                 script {
-                    sshCommand remote: remote, failOnError: false, command: """
-                        cd /opt/goodall/wiki_for_adaptation/src/mysite
-                        
-                        # Stop Gunicorn if running
-                        pkill -f 'gunicorn.*mysite.wsgi' || true
-                        sleep 3
-                        
-                        # Create logs directory if not exists
-                        mkdir -p /opt/goodall/wiki_for_adaptation/logs
-                        
-                        # Start Gunicorn as daemon using full path
-                        /opt/miniforge/envs/goodall/bin/gunicorn mysite.wsgi:application \\
-                            --bind 0.0.0.0:8080 \\
-                            --workers 4 \\
-                            --timeout 120 \\
-                            --access-logfile /opt/goodall/wiki_for_adaptation/logs/gunicorn-access.log \\
-                            --error-logfile /opt/goodall/wiki_for_adaptation/logs/gunicorn-error.log \\
-                            --pid /opt/goodall/wiki_for_adaptation/gunicorn.pid \\
-                            --daemon
-                        
-                        sleep 3
-                        echo "Gunicorn restart command executed"
+                    sshCommand remote: remote, command: """
+                        cd /opt/goodall/wiki_for_adaptation
+                        chmod +x restart_gunicorn.sh
+                        bash restart_gunicorn.sh
                     """
                     echo "Deployment completed"
                 }
