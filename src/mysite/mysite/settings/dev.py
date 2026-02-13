@@ -9,7 +9,18 @@ SECRET_KEY = "django-insecure--$iu)jzl*%l1+(6#=6l^xen9_5b6gqig^_sp0pw19b$qw))ynz
 # SECURITY WARNING: define the correct hosts in production!
 ALLOWED_HOSTS = ["*"]
 
+# EMAIL CONFIGURATION FOR LOCAL TESTING
+# Option 1: Console backend (emails printed to console - default for dev)
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# Option 2: Gmail SMTP (uncomment ONLY to test real emails locally)
+# EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_HOST = "smtp.gmail.com"
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+# EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+# DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 
 # Session configuration for OIDC (allow cookies in development)
 SESSION_COOKIE_SAMESITE = None  # Allow cross-site cookies for OIDC callback

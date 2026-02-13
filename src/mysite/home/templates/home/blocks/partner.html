@@ -1,0 +1,14 @@
+{% load wagtailcore_tags static %}
+
+<div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
+    <div class="flex items-center justify-center mb-4">
+        {% if value.logo_url %}
+            <img src="{% static value.logo_url %}" alt="{{ value.acronym }} Logo" class="h-24 w-auto">
+        {% else %}
+            <div class="text-4xl font-bold text-{{ value.acronym_color }}-600">{{ value.acronym }}</div>
+        {% endif %}
+    </div>
+    <h3 class="text-lg font-semibold text-gray-900 mb-2 text-center">{{ value.name }}</h3>
+    <p class="text-sm text-gray-600 text-center font-medium mb-2">{{ value.role }}</p>
+    <p class="text-sm text-gray-600">{{ value.description }}</p>
+</div>
