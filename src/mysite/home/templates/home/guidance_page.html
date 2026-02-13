@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block title %}{{ page.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Badge -->
+    <div class="mb-4">
+        <span class="inline-block bg-blue-500 text-white text-xs font-bold uppercase px-3 py-1 rounded">Impact Pathways</span>
+    </div>
+
+    <!-- Title -->
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ page.title }}</h1>
+    {% if page.subtitle %}
+    <p class="text-lg text-gray-600 mb-12">{{ page.subtitle }}</p>
+    {% endif %}
+
+    <!-- Body Content -->
+    <div class="space-y-8">
+        {% for block in page.body %}
+            {% if block.block_type == 'heading' %}
+                <h2 class="text-2xl font-bold text-gray-900 mt-8 mb-4">{{ block.value }}</h2>
+            
+            {% elif block.block_type == 'paragraph' %}
+                <div class="prose max-w-none text-gray-700">
+                    {{ block.value|richtext }}
+                </div>
+            
+            {% elif block.block_type == 'image' %}
+                <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4">
+                    {% include_block block %}
+                </div>
+            
+            {% elif block.block_type == 'html' %}
+                {{ block.value|safe }}
+            
+            {% elif block.block_type == 'section' %}
+                {% include_block block %}
+            
+            {% elif block.block_type == 'feature_card' %}
+                {% include_block block %}
+            
+            {% elif block.block_type == 'partner' %}
+                {% include_block block %}
+            
+            {% elif block.block_type == 'team_member' %}
+                {% include_block block %}
+            
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

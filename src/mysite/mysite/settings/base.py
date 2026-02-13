@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "django_filters",
     "mozilla_django_oidc",  # Required for OIDC authentication
     "auditlog",  # Field-level change tracking
+    "captcha",  # Google reCAPTCHA
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -93,6 +94,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "mysite.context_processors.google_analytics",  # Google Analytics ID
             ],
         },
     },
@@ -197,6 +199,20 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 10_000
 
 WAGTAIL_SITE_NAME = "mysite"
 
+# Email Configuration
+# Default to console backend (will be overridden in production)
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@trackadapt.org")
+SERVER_EMAIL = os.environ.get("SERVER_EMAIL", "noreply@trackadapt.org")
+
+# Email configuration for workflow notifications
+WAGTAILADMIN_NOTIFICATION_FROM_EMAIL = DEFAULT_FROM_EMAIL
+WAGTAILADMIN_NOTIFICATION_USE_HTML = True
+
+# Google Analytics
+# Set GOOGLE_ANALYTICS_ID in production environment to enable tracking
+GOOGLE_ANALYTICS_ID = os.environ.get("GOOGLE_ANALYTICS_ID", "")
+
 # Enable user management in Wagtail Admin
 WAGTAIL_USER_EDIT_FORM = 'wagtail.users.forms.UserEditForm'
 WAGTAIL_USER_CREATION_FORM = 'wagtail.users.forms.UserCreationForm'
@@ -252,4 +268,11 @@ OIDC_CALLBACK_PATH = "/oidc/callback/"  # Default callback path
 
 # Authentication redirect URLs
 OIDC_AUTHENTICATION_CALLBACK_URL = "oidc_authentication_callback"
+
+# Google reCAPTCHA settings
+# Get your keys at: https://www.google.com/recaptcha/admin
+RECAPTCHA_PUBLIC_KEY = os.environ.get("RECAPTCHA_PUBLIC_KEY", "")
+RECAPTCHA_PRIVATE_KEY = os.environ.get("RECAPTCHA_PRIVATE_KEY", "")
+# Use reCAPTCHA v2 Checkbox
+RECAPTCHA_REQUIRED_SCORE = 0.85  # For v3, not used in v2
 

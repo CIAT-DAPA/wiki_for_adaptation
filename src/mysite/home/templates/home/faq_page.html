@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block title %}{{ page.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Badge -->
+    <div class="mb-4">
+        <span class="inline-block bg-orange-500 text-white text-xs font-bold uppercase px-3 py-1 rounded">FAQ</span>
+    </div>
+
+    <!-- Title -->
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ page.title }}</h1>
+    {% if page.subtitle %}
+    <p class="text-lg text-gray-600 mb-12">{{ page.subtitle }}</p>
+    {% endif %}
+
+    <!-- FAQ Items -->
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm divide-y divide-gray-200">
+        {% for block in page.body %}
+            {% if block.block_type == 'faq_item' %}
+                <details class="p-6 group">
+                    <summary class="flex items-center justify-between cursor-pointer text-lg font-semibold text-gray-900">
+                        {{ block.value.question }}
+                        <i class="fa fa-chevron-down text-gray-400 group-open:rotate-180 transition-transform"></i>
+                    </summary>
+                    <div class="mt-4 text-gray-600 prose max-w-none">
+                        {{ block.value.answer|richtext }}
+                    </div>
+                </details>
+            {% elif block.block_type == 'paragraph' %}
+                <div class="p-6 prose max-w-none text-gray-700">
+                    {{ block.value|richtext }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -54,6 +54,19 @@
         {% block extra_css %}
         {# Override this in templates to add extra stylesheets #}
         {% endblock %}
+
+        {# Google Analytics - Only when GOOGLE_ANALYTICS_ID is set (production) #}
+        {% if GOOGLE_ANALYTICS_ID %}
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ GOOGLE_ANALYTICS_ID }}"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+
+          gtag('config', '{{ GOOGLE_ANALYTICS_ID }}');
+        </script>
+        {% endif %}
     </head>
 
         <body class="bg-gray-50 min-h-screen flex flex-col {% block body_class %}{% endblock %}">
@@ -63,7 +76,7 @@
                 <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
                     <div class="max-w-7xl mx-auto px-4 flex items-center justify-between h-16">
                         <div class="flex items-center gap-6">
-                            <a href="/" class="font-bold text-lg text-gray-900 flex items-center"><i class="fa-solid fa-cloud mr-2 text-brand-green"></i>Wiki</a>
+                            <a href="/" class="font-bold text-lg text-gray-900 flex items-center"><img src="{% static 'images/logo_navbar.png' %}" alt="Wiki" class="h-8 w-auto mr-2">Wiki</a>
                             <form action="/search/" method="get" class="hidden md:flex items-center bg-gray-100 rounded-lg px-3 py-2 ml-4 w-96">
                                 <i class="fa fa-search text-gray-400 mr-2"></i>
                                 <input type="text" name="query" placeholder="Search by name, description, or keywords..." class="bg-transparent outline-none flex-1 text-sm text-gray-700" />
@@ -74,9 +87,9 @@
                             
                             <!-- Tracking Framework Dropdown -->
                             <div class="relative group">
-                                <button class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1">
-                                    <i class="fa-solid fa-chart-network text-xs"></i> Tracking Framework <i class="fa fa-chevron-down text-xs ml-1"></i>
-                                </button>
+                                <a href="/tracking-framework/" class="text-gray-700 hover:text-brand-green font-medium flex items-center">
+                                    <i class="fa-solid fa-chart-network text-xs mr-1"></i>Tracking Framework<i class="fa fa-chevron-down text-xs ml-1"></i>
+                                </a>
                                 <div class="absolute left-0 top-full pt-2 w-64">
                                     <div class="bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                                         <a href="/impact-pathways/guidance" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Guidance: Project vs policy level</a>
@@ -165,13 +178,8 @@
                 <!-- Footer -->
                 <footer class="bg-white border-t border-gray-200 mt-8">
                     <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-                        <span class="font-bold text-gray-900 flex items-center"><i class="fa-solid fa-cloud mr-2 text-brand-green"></i>Wiki</span>
-                        <div class="flex gap-2">
-                            <span class="w-6 h-2 bg-gray-200 rounded-full"></span>
-                            <span class="w-6 h-2 bg-gray-200 rounded-full"></span>
-                            <span class="w-6 h-2 bg-gray-200 rounded-full"></span>
-                            <span class="w-6 h-2 bg-gray-200 rounded-full"></span>
-                        </div>
+                        <span class="font-bold text-gray-900 flex items-center"><img src="{% static 'images/logo_navbar.png' %}" alt="Wiki" class="h-8 w-auto mr-2">Wiki</span>
+                        <img src="{% static 'images/logo_footer.png' %}" alt="CGIAR Climate Action" class="h-16 w-auto">
                     </div>
                 </footer>
 
