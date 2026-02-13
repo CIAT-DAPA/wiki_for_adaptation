@@ -9,18 +9,21 @@ from wagtail.documents import urls as wagtaildocs_urls
 
 from search import views as search_views
 from mysite.oidc_views import oidc_logout_view, wagtail_login_redirect
+from mysite.views import become_editor_view, feedback_view
 
 urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
-    path("wiki-instructions/", TemplateView.as_view(template_name="wiki_instructions.html"), name="wiki_instructions"),
-    path("faq/", TemplateView.as_view(template_name="faq.html"), name="faq"),
-    path("become-editor/", TemplateView.as_view(template_name="become_editor.html"), name="become_editor"),
-    path("feedback/", TemplateView.as_view(template_name="feedback.html"), name="feedback"),
-    path("tracking-framework/", TemplateView.as_view(template_name="tracking_framework.html"), name="tracking_framework"),
-    path("impact-pathways/guidance/", TemplateView.as_view(template_name="guidance_project_vs_policy.html"), name="guidance_project_vs_policy"),
-    path("about/", TemplateView.as_view(template_name="about.html"), name="about"),
+    # Static pages below are now managed by Wagtail - create them in the admin
+    # path("wiki-instructions/", TemplateView.as_view(template_name="wiki_instructions.html"), name="wiki_instructions"),
+    # path("faq/", TemplateView.as_view(template_name="faq.html"), name="faq"),
+    # path("tracking-framework/", TemplateView.as_view(template_name="tracking_framework.html"), name="tracking_framework"),
+    # path("impact-pathways/guidance/", TemplateView.as_view(template_name="guidance_project_vs_policy.html"), name="guidance_project_vs_policy"),
+    # path("about/", TemplateView.as_view(template_name="about.html"), name="about"),
+    # Forms with CAPTCHA - keep as Django views
+    path("become-editor/", become_editor_view, name="become_editor"),
+    path("feedback/", feedback_view, name="feedback"),
     path("oidc/", include("mozilla_django_oidc.urls")),
     path("admin/login/", wagtail_login_redirect, name="wagtailadmin_login"),  # Override Wagtail login with OIDC
     path("admin/logout/", oidc_logout_view, name="wagtailadmin_logout"),  # Override Wagtail logout

@@ -1,0 +1,9 @@
+{% load wagtailcore_tags %}
+
+<div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
+    <div class="w-12 h-12 bg-{{ value.icon_color }}-100 text-{{ value.icon_color }}-600 rounded-lg flex items-center justify-center mb-4">
+        <i class="fa {{ value.icon }} text-xl"></i>
+    </div>
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ value.title }}</h3>
+    <p class="text-gray-600 text-sm">{{ value.description }}</p>
+</div>
