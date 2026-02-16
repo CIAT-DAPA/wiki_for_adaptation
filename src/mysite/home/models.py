@@ -3,7 +3,7 @@ from django.db import models
 from wagtail.models import Page
 from wagtail.fields import RichTextField, StreamField
 from wagtail import blocks
-from wagtail.admin.panels import FieldPanel
+from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.images.blocks import ImageChooserBlock
 
 
@@ -138,6 +138,10 @@ class AboutPage(Page):
         FieldPanel('body'),
     ]
     
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, "Common page configuration"),
+    ]
+    
     max_count = 1  # Only allow one About page
     
     class Meta:
@@ -162,6 +166,10 @@ class FAQPage(Page):
         FieldPanel('body'),
     ]
     
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, "Common page configuration"),
+    ]
+    
     max_count = 1  # Only allow one FAQ page
     
     class Meta:
@@ -177,6 +185,10 @@ class WikiInstructionsPage(Page):
     content_panels = Page.content_panels + [
         FieldPanel('subtitle'),
         FieldPanel('body'),
+    ]
+    
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, "Common page configuration"),
     ]
     
     max_count = 1  # Only allow one Wiki Instructions page
@@ -196,6 +208,10 @@ class TrackingFrameworkPage(Page):
         FieldPanel('body'),
     ]
     
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, "Common page configuration"),
+    ]
+    
     max_count = 1  # Only allow one Tracking Framework page
     
     class Meta:
@@ -211,6 +227,10 @@ class GuidancePage(Page):
     content_panels = Page.content_panels + [
         FieldPanel('subtitle'),
         FieldPanel('body'),
+    ]
+    
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, "Common page configuration"),
     ]
     
     class Meta:
