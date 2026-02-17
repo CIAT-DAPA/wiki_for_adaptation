@@ -10,7 +10,8 @@ ENV_FILE="/opt/goodall/wiki_for_adaptation/.env"
 if [ -f "$ENV_FILE" ]; then
     echo "Loading environment variables from .env..."
     # Remove Windows line endings (\r) and export variables
-    export $(grep -v '^#' "$ENV_FILE" | tr -d '\r' | xargs)
+    # Exclude ALLOWED_HOSTS (defined in production.py) and DEBUG (must be False in production)
+    export $(grep -v '^#' "$ENV_FILE" | grep -v '^ALLOWED_HOSTS=' | grep -v '^DEBUG=' | tr -d '\r' | xargs)
     echo "✅ Environment variables loaded"
     echo "   DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE"
 else
@@ -45,9 +46,23 @@ sleep 2
 # Create logs directory
 mkdir -p "$LOG_DIR"
 
-# Start Gunicorn with daemon flag
-echo "Starting Gunicorn..."
-/opt/miniforge/envs/goodall/bin/gunicorn mysite.wsgi:application \
+# Start Gunicorn with daemon flag and explicit environment variables
+echo "Starting Gunicorn with production settings..."
+env \
+    DJANGO_SETTINGS_MODULE="$DJANGO_SETTINGS_MODULE" \
+    SECRET_KEY="$SECRET_KEY" \
+    DATABASE_URL="$DATABASE_URL" \
+    PUBLIC_KEYCLOAK_URL="$PUBLIC_KEYCLOAK_URL" \
+    PUBLIC_KEYCLOAK_REALM="$PUBLIC_KEYCLOAK_REALM" \
+    PUBLIC_KEYCLOAK_CLIENT_ID="$PUBLIC_KEYCLOAK_CLIENT_ID" \
+    KEYCLOAK_CLIENT_SECRET="$KEYCLOAK_CLIENT_SECRET" \
+    EMAIL_HOST_USER="$EMAIL_HOST_USER" \
+    EMAIL_HOST_PASSWORD="$EMAIL_HOST_PASSWORD" \
+    DEFAULT_FROM_EMAIL="$DEFAULT_FROM_EMAIL" \
+    RECAPTCHA_PUBLIC_KEY="$RECAPTCHA_PUBLIC_KEY" \
+    RECAPTCHA_PRIVATE_KEY="$RECAPTCHA_PRIVATE_KEY" \
+    GOOGLE_ANALYTICS_ID="$GOOGLE_ANALYTICS_ID" \
+    /opt/miniforge/envs/goodall/bin/gunicorn mysite.wsgi:application \
     --bind 0.0.0.0:8080 \
     --workers 4 \
     --timeout 120 \
