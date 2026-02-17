@@ -4,6 +4,18 @@
 APP_DIR="/opt/goodall/wiki_for_adaptation/src/mysite"
 LOG_DIR="/opt/goodall/wiki_for_adaptation/logs"
 PID_FILE="/opt/goodall/wiki_for_adaptation/gunicorn.pid"
+ENV_FILE="/opt/goodall/wiki_for_adaptation/.env"
+
+# CRITICAL: Load environment variables from .env file
+if [ -f "$ENV_FILE" ]; then
+    echo "Loading environment variables from .env..."
+    export $(grep -v '^#' "$ENV_FILE" | xargs)
+    echo "✅ Environment variables loaded"
+    echo "   DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE"
+else
+    echo "❌ ERROR: .env file not found at $ENV_FILE"
+    exit 1
+fi
 
 cd "$APP_DIR"
 
