@@ -9,7 +9,8 @@ ENV_FILE="/opt/goodall/wiki_for_adaptation/.env"
 # CRITICAL: Load environment variables from .env file
 if [ -f "$ENV_FILE" ]; then
     echo "Loading environment variables from .env..."
-    export $(grep -v '^#' "$ENV_FILE" | xargs)
+    # Remove Windows line endings (\r) and export variables
+    export $(grep -v '^#' "$ENV_FILE" | tr -d '\r' | xargs)
     echo "✅ Environment variables loaded"
     echo "   DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE"
 else
