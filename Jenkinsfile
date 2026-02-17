@@ -67,7 +67,9 @@ pipeline {
                 script {
                     try {
                         sshCommand remote: remote, command: """
-                            cd /opt/goodall/wiki_for_adaptation/src/mysite
+                            cd /opt/goodall/wiki_for_adaptation
+                            export \$(grep -v '^#' .env | xargs)
+                            cd src/mysite
                             source /opt/miniforge/etc/profile.d/conda.sh
                             conda activate goodall
                             python manage.py migrate --noinput
@@ -85,7 +87,9 @@ pipeline {
                 script {
                     try {
                         sshCommand remote: remote, command: """
-                            cd /opt/goodall/wiki_for_adaptation/src/mysite
+                            cd /opt/goodall/wiki_for_adaptation
+                            export \$(grep -v '^#' .env | xargs)
+                            cd src/mysite
                             source /opt/miniforge/etc/profile.d/conda.sh
                             conda activate goodall
                             python manage.py collectstatic --noinput
