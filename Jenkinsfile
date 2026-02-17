@@ -68,7 +68,7 @@ pipeline {
                     try {
                         sshCommand remote: remote, command: """
                             cd /opt/goodall/wiki_for_adaptation
-                            export \$(grep -v '^#' .env | tr -d '\\r' | xargs)
+                            export \$(grep -v '^#' .env | grep -v '^ALLOWED_HOSTS=' | grep -v '^DEBUG=' | tr -d '\\r' | xargs)
                             cd src/mysite
                             source /opt/miniforge/etc/profile.d/conda.sh
                             conda activate goodall
@@ -88,7 +88,7 @@ pipeline {
                     try {
                         sshCommand remote: remote, command: """
                             cd /opt/goodall/wiki_for_adaptation
-                            export \$(grep -v '^#' .env | tr -d '\\r' | xargs)
+                            export \$(grep -v '^#' .env | grep -v '^ALLOWED_HOSTS=' | grep -v '^DEBUG=' | tr -d '\\r' | xargs)
                             cd src/mysite
                             source /opt/miniforge/etc/profile.d/conda.sh
                             conda activate goodall
