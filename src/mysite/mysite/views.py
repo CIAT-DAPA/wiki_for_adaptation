@@ -1,10 +1,75 @@
 """Views for public-facing pages."""
+import os
+from pathlib import Path
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
 
 from .forms import BecomeEditorForm, FeedbackForm
+
+
+def _load_email_config():
+    """Load email configuration from .env for production email sending."""
+    # Load .env if it exists (production path)
+    env_path = Path(__file__).resolve().parent.parent.parent.parent / '.env'
+    if env_path.exists():
+        try:
+            from dotenv import load_dotenv
+            load_dotenv(env_path, override=True)
+        except ImportError:
+            pass
+    
+    # Return email configuration from environment
+    return {
+        'host': 'smtp.gmail.com',
+        'port': 587,
+        'use_tls': True,
+        'username': os.environ.get('EMAIL_HOST_USER', ''),
+        'password': os.environ.get('EMAIL_HOST_PASSWORD', ''),
+        'from_email': os.environ.get('EMAIL_HOST_USER', settings.DEFAULT_FROM_EMAIL),
+    }
+
+
+def _send_email_with_smtp(subject, message, recipient_list):
+    """Send email using SMTP with credentials from .env."""
+    from django.core.mail import EmailMessage
+    
+    config = _load_email_config()
+    
+    if not config['username'] or not config['password']:
+        # Fallback to Django settings (will use console backend if not configured)
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            recipient_list,
+            fail_silently=False,
+        )
+        return
+    
+    # Create email with explicit SMTP configuration
+    email = EmailMessage(
+        subject=subject,
+        body=message,
+        from_email=config['from_email'],
+        to=recipient_list,
+        connection=None,
+    )
+    
+    # Configure SMTP connection
+    from django.core.mail import get_connection
+    connection = get_connection(
+        backend='django.core.mail.backends.smtp.EmailBackend',
+        host=config['host'],
+        port=config['port'],
+        username=config['username'],
+        password=config['password'],
+        use_tls=config['use_tls'],
+    )
+    
+    email.connection = connection
+    email.send(fail_silently=False)
 
 
 def become_editor_view(request):
@@ -34,16 +99,14 @@ This is an automated message from TrackAdapt Wiki
             
             try:
                 # Send email to admin
-                send_mail(
+                _send_email_with_smtp(
                     subject,
                     email_body,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [settings.DEFAULT_FROM_EMAIL],  # Send to ourselves
-                    fail_silently=False,
+                    [os.environ.get('EMAIL_HOST_USER', settings.DEFAULT_FROM_EMAIL)],
                 )
                 
                 # Send confirmation to applicant
-                send_mail(
+                _send_email_with_smtp(
                     'Your Editor Application - TrackAdapt Wiki',
                     f"""
 Hello {name},
@@ -55,9 +118,7 @@ We have received your application and will review it shortly. We'll get back to 
 Best regards,
 The TrackAdapt Wiki Team
                     """,
-                    settings.DEFAULT_FROM_EMAIL,
                     [email],
-                    fail_silently=False,
                 )
                 
                 messages.success(request, 'Your application has been submitted successfully! Check your email for confirmation.')
@@ -101,16 +162,14 @@ This is an automated message from TrackAdapt Wiki
             
             try:
                 # Send email to admin
-                send_mail(
+                _send_email_with_smtp(
                     subject,
                     email_body,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [settings.DEFAULT_FROM_EMAIL],  # Send to ourselves
-                    fail_silently=False,
+                    [os.environ.get('EMAIL_HOST_USER', settings.DEFAULT_FROM_EMAIL)],
                 )
                 
                 # Send confirmation to user
-                send_mail(
+                _send_email_with_smtp(
                     'Your Feedback - TrackAdapt Wiki',
                     f"""
 Hello {name},
@@ -123,9 +182,7 @@ Our team will review your feedback and take appropriate action.
 Best regards,
 The TrackAdapt Wiki Team
                     """,
-                    settings.DEFAULT_FROM_EMAIL,
                     [email],
-                    fail_silently=False,
                 )
                 
                 messages.success(request, 'Your feedback has been submitted successfully! Thank you for helping us improve.')
