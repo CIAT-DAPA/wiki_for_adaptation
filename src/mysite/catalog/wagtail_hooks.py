@@ -4,10 +4,109 @@ from wagtail.admin.menu import MenuItem
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.models import Group
+from django.dispatch import receiver
+from wagtail.signals import (
+    task_submitted,
+    workflow_submitted,
+    workflow_approved,
+    workflow_rejected,
+    workflow_cancelled,
+)
+from wagtail.models import TaskState, WorkflowState
 from .views import DetailedSiteHistoryView
 import logging
+import os
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
+
+# Log that module was imported and signal receivers will be registered
+logger.info("[WORKFLOW EMAIL] wagtail_hooks.py imported - signal receivers registering")
+
+# Disable default Wagtail "submitted" notifications to avoid console backend emails
+# and custom-recipient mismatch. We handle submitted notifications below via SMTP.
+task_submitted.disconnect(
+    sender=TaskState,
+    dispatch_uid="group_approval_task_submitted_email_notification",
+)
+workflow_submitted.disconnect(
+    sender=WorkflowState,
+    dispatch_uid="workflow_state_submitted_email_notification",
+)
+
+
+def _load_email_config():
+    """Load email configuration from .env for production email sending."""
+    env_path = Path(__file__).resolve().parent.parent.parent.parent / '.env'
+    logger.info("[WORKFLOW EMAIL] Loading env from %s (exists=%s)", env_path, env_path.exists())
+    if env_path.exists():
+        try:
+            from dotenv import load_dotenv
+            load_dotenv(env_path, override=True)
+        except ImportError:
+            logger.warning("[WORKFLOW EMAIL] python-dotenv is not installed")
+
+    config = {
+        'host': 'smtp.gmail.com',
+        'port': 587,
+        'use_tls': True,
+        'username': os.environ.get('EMAIL_HOST_USER', ''),
+        'password': os.environ.get('EMAIL_HOST_PASSWORD', ''),
+        'from_email': os.environ.get('EMAIL_HOST_USER', settings.DEFAULT_FROM_EMAIL),
+    }
+    logger.info(
+        "[WORKFLOW EMAIL] Config loaded host=%s port=%s user_set=%s from_email=%s",
+        config['host'],
+        config['port'],
+        bool(config['username']),
+        config['from_email'],
+    )
+    return config
+
+
+def _send_email_with_smtp(subject, message, recipient_list):
+    """Send email using SMTP with credentials from .env."""
+    from django.core.mail import EmailMessage, get_connection
+
+    config = _load_email_config()
+    logger.info(
+        "[WORKFLOW EMAIL] Sending subject=%s recipients=%s",
+        subject,
+        recipient_list,
+    )
+
+    if not config['username'] or not config['password']:
+        logger.warning("[WORKFLOW EMAIL] Missing SMTP credentials, using Django fallback backend")
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            recipient_list,
+            fail_silently=False,
+        )
+        return
+
+    email = EmailMessage(
+        subject=subject,
+        body=message,
+        from_email=config['from_email'],
+        to=recipient_list,
+        connection=None,
+    )
+
+    connection = get_connection(
+        backend='django.core.mail.backends.smtp.EmailBackend',
+        host=config['host'],
+        port=config['port'],
+        username=config['username'],
+        password=config['password'],
+        use_tls=config['use_tls'],
+        timeout=30,
+    )
+
+    email.connection = connection
+    sent_count = email.send(fail_silently=False)
+    logger.info("[WORKFLOW EMAIL] Send completed sent_count=%s", sent_count)
 
 
 @hooks.register("construct_explorer_page_queryset")
@@ -55,9 +154,20 @@ def send_workflow_notification(page, workflow_state, event_type, user=None, comm
         user: User who triggered the action
         comment: Optional comment from reviewer
     """
+    if not page:
+        logger.error("[WORKFLOW EMAIL] Event=%s but page is None", event_type)
+        return
+
     try:
+        logger.info(
+            "[WORKFLOW EMAIL] Event=%s page_id=%s title=%s user=%s",
+            event_type,
+            page.id,
+            page.title,
+            user.email if user and getattr(user, 'email', None) else 'N/A',
+        )
         # Get the page URL in admin
-        admin_url = f"{settings.WAGTAILADMIN_BASE_URL}/admin/pages/{page.id}/edit/"
+        admin_url = f"https://trackadapt.org/admin/pages/{page.id}/edit/"
         
         if event_type == 'submitted':
             # Notify reviewers that content needs review
@@ -86,12 +196,10 @@ Please review this content at:
 Thank you,
 TrackAdapt Wiki System
 """
-                    send_mail(
+                    _send_email_with_smtp(
                         subject,
                         message,
-                        settings.DEFAULT_FROM_EMAIL,
                         reviewer_emails,
-                        fail_silently=False,
                     )
                     logger.info(f"Sent review notification for page '{page.title}' to {len(reviewer_emails)} reviewers")
         
@@ -114,12 +222,10 @@ Thank you for your contribution!
 
 TrackAdapt Wiki System
 """
-                send_mail(
+                _send_email_with_smtp(
                     subject,
                     message,
-                    settings.DEFAULT_FROM_EMAIL,
                     [page.owner.email],
-                    fail_silently=False,
                 )
                 logger.info(f"Sent approval notification for page '{page.title}' to {page.owner.email}")
         
@@ -142,12 +248,10 @@ Please make the requested changes and resubmit:
 Thank you,
 TrackAdapt Wiki System
 """
-                send_mail(
+                _send_email_with_smtp(
                     subject,
                     message,
-                    settings.DEFAULT_FROM_EMAIL,
                     [page.owner.email],
-                    fail_silently=False,
                 )
                 logger.info(f"Sent rejection notification for page '{page.title}' to {page.owner.email}")
         
@@ -175,12 +279,10 @@ No further action is required.
 
 TrackAdapt Wiki System
 """
-                    send_mail(
+                    _send_email_with_smtp(
                         subject,
                         message,
-                        settings.DEFAULT_FROM_EMAIL,
                         reviewer_emails,
-                        fail_silently=False,
                     )
                     logger.info(f"Sent cancellation notification for page '{page.title}' to {len(reviewer_emails)} reviewers")
     
@@ -188,31 +290,38 @@ TrackAdapt Wiki System
         logger.error(f"Failed to send workflow notification: {e}", exc_info=True)
 
 
-@hooks.register('after_submit_for_moderation')
-def notify_on_submit(request, page):
-    """Send notification when content is submitted for review."""
-    workflow_state = page.current_workflow_state
-    if workflow_state:
-        send_workflow_notification(page, workflow_state, 'submitted', request.user)
+@receiver(task_submitted)
+def notify_on_task_submitted(sender, instance, user=None, **kwargs):
+    """Send notification when content reaches a moderation task (submit/resubmit)."""
+    logger.info("[WORKFLOW EMAIL] Signal received: task_submitted instance=%s", instance)
+    workflow_state = getattr(instance, 'workflow_state', None)
+    page = workflow_state.content_object if workflow_state else None
+    send_workflow_notification(page, workflow_state, 'submitted', user)
 
 
-@hooks.register('after_approve_moderation')
-def notify_on_approve(request, page_revision):
+@receiver(workflow_approved)
+def notify_on_workflow_approved(sender, instance, user=None, **kwargs):
     """Send notification when content is approved."""
-    page = page_revision.page
-    send_workflow_notification(page, None, 'approved', request.user)
+    logger.info("[WORKFLOW EMAIL] Signal received: workflow_approved instance=%s", instance)
+    page = instance.content_object
+    send_workflow_notification(page, instance, 'approved', user)
 
 
-@hooks.register('after_reject_moderation')
-def notify_on_reject(request, page_revision):
+@receiver(workflow_rejected)
+def notify_on_workflow_rejected(sender, instance, user=None, **kwargs):
     """Send notification when content is rejected."""
-    page = page_revision.page
-    # Try to get comment from request
-    comment = request.POST.get('comment', '')
-    send_workflow_notification(page, None, 'rejected', request.user, comment)
+    logger.info("[WORKFLOW EMAIL] Signal received: workflow_rejected instance=%s", instance)
+    page = instance.content_object
+    comment = ""
+    task_state = getattr(instance, 'current_task_state', None)
+    if task_state:
+        comment = getattr(task_state, 'comment', '') or ''
+    send_workflow_notification(page, instance, 'rejected', user, comment)
 
 
-@hooks.register('after_cancel_workflow')
-def notify_on_cancel(request, page, workflow_state):
+@receiver(workflow_cancelled)
+def notify_on_workflow_cancelled(sender, instance, user=None, **kwargs):
     """Send notification when workflow is cancelled."""
-    send_workflow_notification(page, workflow_state, 'cancelled', request.user)
+    logger.info("[WORKFLOW EMAIL] Signal received: workflow_cancelled instance=%s", instance)
+    page = instance.content_object
+    send_workflow_notification(page, instance, 'cancelled', user)

@@ -60,7 +60,7 @@ class IndicatorPage(BaseWikiPage):
 
     def clean(self):
         super().clean()
-        # Limit to max 3 children operational indicators per requirement RF03
+        # Limit to max 3 child operational indicators per requirement RF03
         if self.pk:
             existing = self.get_children().live().count()
             # When creating via admin, children aren't created yet; enforce in child clean too
