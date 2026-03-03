@@ -22,25 +22,25 @@ class HomePage(Page):
 
 # Bloques estructurados para componentes comunes
 class FeatureCardBlock(blocks.StructBlock):
-    """Card destacando una característica con ícono."""
+    """Card highlighting a feature with icon."""
     icon = blocks.ChoiceBlock(choices=[
-        ('fa-globe', 'Globo (Global)'),
-        ('fa-check-circle', 'Check (Validado)'),
-        ('fa-users', 'Usuarios (Comunidad)'),
-        ('fa-bullseye', 'Target (Objetivo)'),
-        ('fa-chart-line', 'Gráfica (Datos)'),
-        ('fa-leaf', 'Hoja (Ambiente)'),
-        ('fa-shield', 'Escudo (Protección)'),
-    ], help_text="Selecciona el ícono para la tarjeta")
+        ('fa-globe', 'Globe (Global)'),
+        ('fa-check-circle', 'Check (Validated)'),
+        ('fa-users', 'Users (Community)'),
+        ('fa-bullseye', 'Target (Goal)'),
+        ('fa-chart-line', 'Chart (Data)'),
+        ('fa-leaf', 'Leaf (Environment)'),
+        ('fa-shield', 'Shield (Protection)'),
+    ], help_text="Select the icon for the card")
     icon_color = blocks.ChoiceBlock(choices=[
-        ('blue', 'Azul'),
-        ('green', 'Verde'),
-        ('purple', 'Morado'),
-        ('orange', 'Naranja'),
-        ('red', 'Rojo'),
+        ('blue', 'Blue'),
+        ('green', 'Green'),
+        ('purple', 'Purple'),
+        ('orange', 'Orange'),
+        ('red', 'Red'),
     ], default='blue')
-    title = blocks.CharBlock(max_length=100, help_text="Título de la característica")
-    description = blocks.TextBlock(help_text="Descripción breve")
+    title = blocks.CharBlock(max_length=100, help_text="Feature title")
+    description = blocks.TextBlock(help_text="Short description")
     
     class Meta:
         icon = 'placeholder'
@@ -48,17 +48,17 @@ class FeatureCardBlock(blocks.StructBlock):
 
 
 class PartnerBlock(blocks.StructBlock):
-    """Información de una organización socia."""
-    name = blocks.CharBlock(max_length=100, help_text="Nombre de la organización")
-    acronym = blocks.CharBlock(max_length=20, help_text="Acrónimo (ej: IWMI, ILRI)")
-    role = blocks.CharBlock(max_length=100, help_text="Rol (ej: Data Standards & Coordination)")
-    description = blocks.TextBlock(help_text="Descripción de la colaboración")
-    logo_url = blocks.CharBlock(max_length=255, required=False, help_text="Ruta al logo (ej: images/iwmi_logo.jpg)")
+    """Information about a partner organization."""
+    name = blocks.CharBlock(max_length=100, help_text="Organization name")
+    acronym = blocks.CharBlock(max_length=20, help_text="Acronym (e.g. IWMI, ILRI)")
+    role = blocks.CharBlock(max_length=100, help_text="Role (e.g. Data Standards & Coordination)")
+    description = blocks.TextBlock(help_text="Collaboration description")
+    logo_url = blocks.CharBlock(max_length=255, required=False, help_text="Logo path (e.g. images/iwmi_logo.jpg)")
     acronym_color = blocks.ChoiceBlock(choices=[
-        ('blue', 'Azul'),
-        ('green', 'Verde'),
-        ('purple', 'Morado'),
-        ('orange', 'Naranja'),
+        ('blue', 'Blue'),
+        ('green', 'Green'),
+        ('purple', 'Purple'),
+        ('orange', 'Orange'),
     ], default='blue')
     
     class Meta:
@@ -67,17 +67,17 @@ class PartnerBlock(blocks.StructBlock):
 
 
 class TeamMemberBlock(blocks.StructBlock):
-    """Información de un miembro del equipo."""
-    name = blocks.CharBlock(max_length=100, help_text="Nombre completo")
-    role = blocks.CharBlock(max_length=100, help_text="Rol/Posición")
-    description = blocks.TextBlock(help_text="Breve biografía o especialidad")
-    initials = blocks.CharBlock(max_length=3, help_text="Iniciales para el avatar (ej: JD)")
+    """Information about a team member."""
+    name = blocks.CharBlock(max_length=100, help_text="Full name")
+    role = blocks.CharBlock(max_length=100, help_text="Role/Position")
+    description = blocks.TextBlock(help_text="Short biography or specialty")
+    initials = blocks.CharBlock(max_length=3, help_text="Initials for avatar (e.g. JD)")
     avatar_color = blocks.ChoiceBlock(choices=[
-        ('blue', 'Azul'),
-        ('green', 'Verde'),
-        ('purple', 'Morado'),
-        ('orange', 'Naranja'),
-        ('red', 'Rojo'),
+        ('blue', 'Blue'),
+        ('green', 'Green'),
+        ('purple', 'Purple'),
+        ('orange', 'Orange'),
+        ('red', 'Red'),
     ], default='blue')
     
     class Meta:
@@ -86,24 +86,24 @@ class TeamMemberBlock(blocks.StructBlock):
 
 
 class SectionBlock(blocks.StructBlock):
-    """Sección con título e ícono."""
+    """Section with title and icon."""
     icon = blocks.ChoiceBlock(choices=[
         ('fa-bullseye', 'Target'),
         ('fa-info-circle', 'Info'),
         ('fa-envelope', 'Email'),
-        ('fa-users', 'Usuarios'),
+        ('fa-users', 'Users'),
     ])
     icon_color = blocks.ChoiceBlock(choices=[
-        ('blue', 'Azul'),
-        ('green', 'Verde'),
-        ('purple', 'Morado'),
+        ('blue', 'Blue'),
+        ('green', 'Green'),
+        ('purple', 'Purple'),
     ], default='blue')
     title = blocks.CharBlock(max_length=100)
-    content = blocks.RichTextBlock(help_text="Contenido de la sección")
+    content = blocks.RichTextBlock(help_text="Section content")
     background_color = blocks.ChoiceBlock(choices=[
-        ('white', 'Blanco'),
-        ('blue', 'Azul claro'),
-        ('gray', 'Gris claro'),
+        ('white', 'White'),
+        ('blue', 'Light blue'),
+        ('gray', 'Light gray'),
     ], default='white')
     
     class Meta:
@@ -112,16 +112,16 @@ class SectionBlock(blocks.StructBlock):
 
 
 class ContentBlock(blocks.StreamBlock):
-    """Bloques de contenido reutilizables y amigables."""
+    """Reusable and user-friendly content blocks."""
     
-    heading = blocks.CharBlock(form_classname="title", icon="title", help_text="Título de sección")
-    paragraph = blocks.RichTextBlock(icon="pilcrow", help_text="Texto con formato enriquecido")
+    heading = blocks.CharBlock(form_classname="title", icon="title", help_text="Section title")
+    paragraph = blocks.RichTextBlock(icon="pilcrow", help_text="Rich formatted text")
     image = ImageChooserBlock(icon="image")
     feature_card = FeatureCardBlock()
     partner = PartnerBlock()
     team_member = TeamMemberBlock()
     section = SectionBlock()
-    html = blocks.RawHTMLBlock(icon="code", help_text="⚠️ Avanzado: HTML personalizado")
+    html = blocks.RawHTMLBlock(icon="code", help_text="⚠️ Advanced: Custom HTML")
     
     class Meta:
         icon = "doc-full"
