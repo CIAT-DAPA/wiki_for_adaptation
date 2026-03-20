@@ -22,23 +22,56 @@ def search(request):
     indicator_type_filter = request.GET.get("indicator_type", None)
     geographic_scale_filter = request.GET.get("geographic_scale", None)
 
+    indicator_ct = ContentType.objects.get(app_label='catalog', model='indicatorpage')
+    metric_ct = ContentType.objects.get(app_label='catalog', model='metricpage')
+    sop_ct = ContentType.objects.get(app_label='catalog', model='soppage')
+    searchable_content_types = [indicator_ct, metric_ct, sop_ct]
+
+    # Some requests send query as literal strings like "None" or "null".
+    # Treat them as an empty query.
+    if search_query is not None:
+        search_query = search_query.strip()
+        if search_query.lower() in {"", "none", "null"}:
+            search_query = None
+
+    # Normalize empty/all values so they behave as "no specific value"
+    content_type_filter = content_type_filter or None
+    category_filter = category_filter or None
+    dimension_filter = dimension_filter or None
+    indicator_type_filter = indicator_type_filter or None
+    geographic_scale_filter = geographic_scale_filter or None
+
+    if content_type_filter == 'all':
+        content_type_filter = None
+
     # Apply category filter from dropdown (same as content_type_filter from tabs)
     if category_filter and category_filter != 'all':
         content_type_filter = category_filter
 
+    # Treat presence of filter params as explicit filtering intent, even when values are "all".
+    # This keeps URLs like ?dimension=all&indicator_type=all&geographic_scale=all working.
+    has_explicit_filter = any([
+        request.GET.get("type") is not None,
+        request.GET.get("category") is not None,
+        request.GET.get("dimension") is not None,
+        request.GET.get("indicator_type") is not None,
+        request.GET.get("geographic_scale") is not None,
+    ])
+
     # Search
     if search_query:
-        search_results = Page.objects.live().search(search_query)
+        search_results = Page.objects.live().filter(content_type__in=searchable_content_types).search(search_query)
         
         # Convert search results to a list of PKs to use with regular querysets
         search_pks = [r.pk for r in search_results]
-        search_results = Page.objects.filter(pk__in=search_pks)
-    elif content_type_filter:
-        # If no search query but there's a category filter, show all items of that category
-        search_results = Page.objects.live()
+        search_results = Page.objects.filter(pk__in=search_pks, content_type__in=searchable_content_types)
+    elif has_explicit_filter:
+        # If no search query but filters were explicitly used (including "all"),
+        # start from all live pages and then apply the selected filters.
+        search_results = Page.objects.live().filter(content_type__in=searchable_content_types)
     else:
-        # No search query and no filter - show nothing
-        search_results = Page.objects.none()
+        # Base search page: show all searchable content types.
+        search_results = Page.objects.live().filter(content_type__in=searchable_content_types)
 
     # Filter by content type if specified
     if search_results.exists() and content_type_filter:
@@ -82,15 +115,30 @@ def search(request):
     # Calculate counts by type for tabs
     if search_query:
         # If there's a search query, use the search results for counts
-        search_pks = [r.pk for r in Page.objects.live().search(search_query)]
-        all_results = Page.objects.filter(pk__in=search_pks)
+        search_pks = [r.pk for r in Page.objects.live().filter(content_type__in=searchable_content_types).search(search_query)]
+        all_results = Page.objects.filter(pk__in=search_pks, content_type__in=searchable_content_types)
+    elif has_explicit_filter:
+        # If filters are used without query, count within searchable content types only
+        all_results = Page.objects.live().filter(content_type__in=searchable_content_types)
+
+        if content_type_filter == 'indicator':
+            all_results = all_results.filter(content_type=indicator_ct)
+        elif content_type_filter == 'metric':
+            all_results = all_results.filter(content_type=metric_ct)
+        elif content_type_filter == 'sop':
+            all_results = all_results.filter(content_type=sop_ct)
+
+        if dimension_filter and dimension_filter != 'all':
+            all_results = all_results.filter(content_type=indicator_ct, indicatorpage__dimension=dimension_filter)
+
+        if indicator_type_filter and indicator_type_filter != 'all':
+            all_results = all_results.filter(content_type=indicator_ct, indicatorpage__indicator_type=indicator_type_filter)
+
+        if geographic_scale_filter and geographic_scale_filter != 'all':
+            all_results = all_results.filter(content_type=sop_ct, soppage__geographic_scale=geographic_scale_filter)
     else:
         # If no search query, count all live pages
-        all_results = Page.objects.live()
-    
-    indicator_ct = ContentType.objects.get(app_label='catalog', model='indicatorpage')
-    metric_ct = ContentType.objects.get(app_label='catalog', model='metricpage')
-    sop_ct = ContentType.objects.get(app_label='catalog', model='soppage')
+        all_results = Page.objects.live().filter(content_type__in=searchable_content_types)
     
     indicator_count = all_results.filter(content_type=indicator_ct).count()
     metric_count = all_results.filter(content_type=metric_ct).count()
