@@ -1,31 +1,87 @@
 {% load wagtailcore_tags %}
 
-<section class="w-full bg-gray-100 py-12 md:py-16">
-    <div class="max-w-7xl mx-auto px-4 flex flex-col items-center justify-center">
-        <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 text-center">Adaptation Tracking Wiki</h1>
-        <p class="text-base md:text-lg text-gray-600 mb-3 md:mb-4 text-center max-w-3xl leading-relaxed">A comprehensive knowledge base of indicators and methods for assessing climate change adaptation. It is designed to standardize measurements and provide clear, rigorous information on the effectiveness and impact of adaptation efforts, enabling policymakers and practitioners to track, compare, and accelerate effective climate action.</p>
-        <p class="text-sm text-gray-600 mb-6 md:mb-8 text-center">
-            <a href="/wiki-instructions" class="text-brand-green hover:underline font-medium">Learn how to use the Wiki here</a>
-        </p>
-        <form action="/search/" method="get" class="w-full max-w-xl flex items-center gap-2 mb-4 md:mb-6">
-            <input type="text" name="query" placeholder="Search indicators, metrics, or SOPs..." class="flex-1 px-4 py-2 md:py-3 rounded-lg border border-gray-300 text-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-green text-sm md:text-base" />
+<section class="w-full relative overflow-hidden bg-gradient-to-b from-emerald-50 via-teal-50/40 to-white py-12 md:py-20">
+    {# Decorative climate / agriculture visual identity (CGIAR Climate Action palette) #}
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+        <div class="absolute -top-24 -left-24 w-96 h-96 bg-emerald-200/40 rounded-full blur-3xl"></div>
+        <div class="absolute -top-16 right-0 w-80 h-80 bg-teal-200/40 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 left-1/3 w-72 h-72 bg-lime-200/30 rounded-full blur-3xl"></div>
+        {# Rolling hills anchored to the bottom #}
+        <svg class="absolute bottom-0 left-0 w-full h-40 text-emerald-100" viewBox="0 0 1440 160" preserveAspectRatio="none" fill="currentColor">
+            <path d="M0,120 C240,60 480,160 720,110 C960,60 1200,150 1440,90 L1440,160 L0,160 Z" fill="currentColor"/>
+            <path d="M0,140 C300,100 600,170 900,130 C1140,98 1320,160 1440,130 L1440,160 L0,160 Z" class="text-emerald-200" fill="currentColor"/>
+        </svg>
+    </div>
+    <div class="relative max-w-7xl mx-auto px-4 text-center">
+        <div class="inline-flex items-center gap-2 bg-white/80 backdrop-blur text-emerald-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-4 border border-emerald-200 shadow-sm">
+            <i class="fa fa-leaf text-emerald-500"></i>
+            Climate Adaptation Knowledge Base
+        </div>
+        <h1 class="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight my-4">Track, measure, and <span class="text-brand-green">accelerate</span> adaptation</h1>
+        <p class="text-base md:text-lg text-gray-600 mb-6 max-w-3xl mx-auto leading-relaxed">Standarized indicators, metrics, and SOPs for measuring climate adaptation progress - built for policymakers and practitioners</p>
+
+        <form action="/search/" method="get" class="max-w-3xl mx-auto flex items-center gap-2 border-2 border-emerald-300 rounded-2xl px-3 py-2 bg-white shadow-sm mb-4">
+            <span class="inline-flex items-center justify-center w-9 h-9 rounded-full bg-emerald-100 text-emerald-600">
+                <i class="fa fa-search"></i>
+            </span>
+            <input type="text" name="query" placeholder="Search indicators, metrics, or SOPs..." class="w-full py-2 text-base md:text-lg outline-none" />
+            <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl">Search</button>
         </form>
-        <div class="flex flex-col sm:flex-row gap-3 md:gap-4">
-            <a href="/search/" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-100 font-medium flex items-center justify-center gap-2 text-sm md:text-base"><i class="fa fa-filter"></i> Advanced Search</a>
-            <a href="/about" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-100 font-medium text-sm md:text-base text-center">Learn More</a>
+
+        <div class="flex flex-wrap justify-center gap-3 mb-8">
+            <span class="px-4 py-1.5 rounded-full bg-gray-50 text-sm text-gray-700 border border-gray-200 inline-flex items-center gap-2">
+                <i class="fa fa-seedling text-amber-500"></i>
+                Food security
+            </span>
+            <span class="px-4 py-1.5 rounded-full bg-gray-50 text-sm text-gray-700 border border-gray-200 inline-flex items-center gap-2">
+                <i class="fa fa-tint text-blue-500"></i>
+                Water resources
+            </span>
+            <span class="px-4 py-1.5 rounded-full bg-gray-50 text-sm text-gray-700 border border-gray-200 inline-flex items-center gap-2">
+                <i class="fa fa-building text-orange-500"></i>
+                Infrastructure
+            </span>
+            <span class="px-4 py-1.5 rounded-full bg-gray-50 text-sm text-gray-700 border border-gray-200 inline-flex items-center gap-2">
+                <i class="fa fa-leaf text-emerald-600"></i>
+                Ecosystems
+            </span>
+            <span class="px-4 py-1.5 rounded-full bg-gray-50 text-sm text-gray-700 border border-gray-200 inline-flex items-center gap-2">
+                <i class="fa fa-heartbeat text-rose-500"></i>
+                Health
+            </span>
+        </div>
+
+        <!-- Statistics bar -->
+        <div class="max-w-5xl mx-auto bg-white border border-emerald-100 rounded-2xl shadow-lg shadow-emerald-100/50 grid grid-cols-2 md:grid-cols-4 divide-x divide-gray-100 text-center overflow-hidden mb-8">
+            <div class="px-6 py-6">
+                <div class="text-3xl md:text-4xl font-extrabold text-emerald-600">{{ indicator_count }}</div>
+                <div class="text-sm text-gray-600 mt-1">Indicators</div>
+            </div>
+            <div class="px-6 py-6">
+                <div class="text-3xl md:text-4xl font-extrabold text-emerald-600">{{ metric_count }}</div>
+                <div class="text-sm text-gray-600 mt-1">Metrics</div>
+            </div>
+            <div class="px-6 py-6">
+                <div class="text-3xl md:text-4xl font-extrabold text-emerald-600">{{ sop_count }}</div>
+                <div class="text-sm text-gray-600 mt-1">SOPs</div>
+            </div>
+            <div class="px-6 py-6">
+                <div class="text-3xl md:text-4xl font-extrabold text-emerald-600">{{ dimension_count }}</div>
+                <div class="text-sm text-gray-600 mt-1">Dimensions</div>
+            </div>
         </div>
     </div>
 </section>
 
 <section class="w-full py-8 md:py-12 bg-white">
     <div class="max-w-7xl mx-auto px-4">
-        <h2 class="text-2xl md:text-2xl font-bold text-gray-900 mb-2 text-center">Latest Wiki Entries</h2>
-        <p class="text-sm md:text-base text-gray-600 mb-6 md:mb-8 text-center">Recently added and updated content</p>
+        <h2 class="text-2xl md:text-2xl font-bold text-gray-900 mb-1 text-left">Latest wiki entries</h2>
+        <p class="text-sm md:text-base text-gray-600 mb-6 md:mb-8 text-left">Recently added and updated content</p>
         <div class="grid md:grid-cols-2 gap-6 md:gap-8 mb-6 md:mb-8">
             {% for entry in latest_entries %}
             <a href="{% pageurl entry %}" class="block bg-white border border-gray-200 rounded-lg shadow-sm p-4 md:p-5 hover:shadow-md transition-all group">
-                <div class="flex items-center gap-2 mb-2">
-                    <span class="inline-block bg-blue-500 text-white text-xs font-bold uppercase px-2 py-1 rounded">indicator</span>
+                <div class="flex items-center justify-between gap-2 mb-2">
+                    <span class="inline-flex items-center bg-blue-50 text-blue-600 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border border-blue-200">indicator</span>
                     <span class="text-gray-500 text-xs">{{ entry.first_published_at|date:"m/d/Y" }}</span>
                 </div>
                 <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-1">{{ entry.title }}</h3>
