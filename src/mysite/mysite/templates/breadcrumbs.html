@@ -1,0 +1,22 @@
+{% load wagtailcore_tags %}
+
+<!-- Breadcrumb Navigation -->
+<nav class="bg-white border-b border-gray-200 py-3 mb-6" aria-label="Breadcrumb">
+    <div class="max-w-7xl mx-auto px-4 flex items-center gap-2 text-sm">
+        <a href="/" class="text-gray-600 hover:text-brand-green">Home</a>
+        
+        {% if page.get_parent %}
+            {% with parent=page.get_parent %}
+                {% if parent.title != "Home" %}
+                    <span class="text-gray-400">/</span>
+                    <a href="{% pageurl parent %}" class="text-gray-600 hover:text-brand-green">{{ parent.title }}</a>
+                {% endif %}
+            {% endwith %}
+        {% endif %}
+        
+        {% if page.title %}
+            <span class="text-gray-400">/</span>
+            <span class="text-gray-900 font-medium">{{ page.title|truncatewords:5 }}</span>
+        {% endif %}
+    </div>
+</nav>

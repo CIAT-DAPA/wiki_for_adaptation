@@ -21,7 +21,7 @@
   <li><a href="#technical-capacity" class="text-gray-700 hover:text-brand-green">Technical Capacity</a></li>
   {% endif %}
   {% if page.activities_and_steps %}
-  <li><a href="#activities" class="text-gray-700 hover:text-brand-green">Activities and Steps</a></li>
+  <li><a href="#activities" class="text-gray-700 hover:text-brand-green">Measurement Steps</a></li>
   {% endif %}
   {% if page.options_enhancing_robustness %}
   <li><a href="#robustness" class="text-gray-700 hover:text-brand-green">Enhancing Robustness</a></li>
@@ -48,7 +48,7 @@
       <span class="inline-block bg-brand-orange text-white text-xs font-bold uppercase px-3 py-1 rounded mb-2">SOP (Standard Operating Procedure)</span>
       <h1 class="text-4xl font-bold text-gray-900 mb-2">{{ page.title }}</h1>
       <p class="text-gray-500 text-sm flex items-center gap-4">
-        <span><i class="fas fa-user text-gray-400 mr-1"></i> Dr. {{ page.entry_author|default:"Unknown" }}</span>
+        <span><i class="fas fa-user text-gray-400 mr-1"></i> {{ page.entry_author|default:page.owner.get_full_name|default:page.owner.username|default:"Unknown" }}</span>
         <span><i class="fas fa-calendar text-gray-400 mr-1"></i> {{ page.first_published_at|date:"m/d/Y" }}</span>
       </p>
     </header>
@@ -62,46 +62,36 @@
 
     {% if page.data_sources %}
     <section id="data-sources" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
-      <h2 class="text-2xl font-semibold text-gray-900 mb-3">
-        <i class="fas fa-database text-gray-700 mr-2"></i>Data Sources
-      </h2>
-      <div class="prose prose-sm max-w-none">{{ page.data_sources|richtext }}</div>
+      <h2 class="text-2xl font-semibold text-gray-900 mb-3">Data Sources</h2>
+      <div class="prose prose-sm max-w-none">{{ page.data_sources_html }}</div>
     </section>
     {% endif %}
 
     <section class="grid md:grid-cols-2 gap-6 my-6">
       {% if page.units %}
       <section id="units" class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 scroll-mt-20">
-        <h3 class="text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <i class="fas fa-ruler text-gray-600 mr-2"></i>Units
-        </h3>
+        <h3 class="text-base font-semibold text-gray-900 mb-2">Units</h3>
         <div class="text-gray-700">{{ page.units }}</div>
       </section>
       {% endif %}
 
       {% if page.frequency %}
       <section id="frequency" class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 scroll-mt-20">
-        <h3 class="text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <i class="far fa-clock text-gray-600 mr-2"></i>Frequency
-        </h3>
+        <h3 class="text-base font-semibold text-gray-900 mb-2">Frequency</h3>
         <div class="text-gray-700">{{ page.frequency }}</div>
       </section>
       {% endif %}
 
       {% if page.geographic_scale %}
       <section id="geographic-scale" class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 scroll-mt-20">
-        <h3 class="text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <i class="fas fa-map-marker-alt text-gray-600 mr-2"></i>Geographic Scale
-        </h3>
+        <h3 class="text-base font-semibold text-gray-900 mb-2">Geographic Scale</h3>
         <div class="text-gray-700">{{ page.geographic_scale }}</div>
       </section>
       {% endif %}
 
       {% if page.technical_capacity %}
       <section id="technical-capacity" class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 scroll-mt-20">
-        <h3 class="text-base font-semibold text-gray-900 mb-2 flex items-center">
-          <i class="fas fa-wrench text-gray-600 mr-2"></i>Technical Capacity
-        </h3>
+        <h3 class="text-base font-semibold text-gray-900 mb-2">Technical Capacity to Measure Metric</h3>
         <div class="prose prose-sm max-w-none text-gray-700">{{ page.technical_capacity|richtext }}</div>
       </section>
       {% endif %}
@@ -109,36 +99,36 @@
 
     {% if page.activities_and_steps %}
     <section id="activities" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
-      <h2 class="text-2xl font-semibold text-gray-900 mb-3">Activities and Steps</h2>
-      <div class="prose prose-sm max-w-none">{{ page.activities_and_steps|richtext }}</div>
+      <h2 class="text-2xl font-semibold text-gray-900 mb-3">Measurement Steps</h2>
+      <div class="prose prose-sm max-w-none">{{ page.activities_and_steps_html }}</div>
     </section>
     {% endif %}
 
     {% if page.options_enhancing_robustness %}
     <section id="robustness" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">Options for Enhancing Robustness</h2>
-      <div class="prose prose-sm max-w-none">{{ page.options_enhancing_robustness|richtext }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.options_enhancing_robustness_html }}</div>
     </section>
     {% endif %}
 
     {% if page.options_reducing_costs %}
     <section id="costs" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">Options for Reducing Costs</h2>
-      <div class="prose prose-sm max-w-none">{{ page.options_reducing_costs|richtext }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.options_reducing_costs_html }}</div>
     </section>
     {% endif %}
 
     {% if page.available_tools_and_code %}
     <section id="tools" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">Available Tools and Code</h2>
-      <div class="prose prose-sm max-w-none">{{ page.available_tools_and_code|richtext }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.available_tools_and_code_html }}</div>
     </section>
     {% endif %}
 
     {% if page.references %}
     <section id="references" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
       <h2 class="text-2xl font-semibold text-gray-900 mb-3">References</h2>
-      <div class="prose prose-sm max-w-none">{{ page.references|richtext }}</div>
+      <div class="prose prose-sm max-w-none">{{ page.references_html }}</div>
     </section>
     {% endif %}
 
