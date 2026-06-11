@@ -15,9 +15,25 @@
     {% if page.subtitle %}
     <p class="text-lg text-gray-600 mb-12">{{ page.subtitle }}</p>
     {% endif %}
-
     <!-- Body Content -->
     <div class="space-y-8">
+        {% if not page.body %}
+        <div class="prose max-w-none text-gray-700">
+            <p>The Wiki is designed to help you find indicators and their metrics.</p>
+            <h3>Search</h3>
+            <p>Use the search bar on the home page or go to Indicators &gt; Search Indicators / Indicator search to find indicators and metrics.</p>
+            <h3>Filters</h3>
+            <p>Narrow your search by filtering by tracking level, purpose, and theme to find exactly what you need.</p>
+            <h3>3 Explore indicators</h3>
+            <p>Follow links to learn about indicators and metrics.</p>
+
+            <h3>Understanding the structure</h3>
+            <h4>INDICATOR</h4>
+            <p>Attributes of climate change contexts, adaptation practice and adaptation impact that are monitored or evaluated. Each indicator is connected to multiple metrics that measure different aspects.</p>
+            <h4>METRIC</h4>
+            <p>Specific quantitative measures used to track indicators. Each metric includes detailed measurement methods referred to as standard operating procedures (SOPs).</p>
+        </div>
+        {% endif %}
         {% for block in page.body %}
             {% if block.block_type == 'heading' %}
                 <h2 class="text-2xl font-bold text-gray-900 mt-8 mb-4">{{ block.value }}</h2>

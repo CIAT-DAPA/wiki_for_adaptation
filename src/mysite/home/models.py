@@ -12,10 +12,33 @@ class HomePage(Page):
         context = super().get_context(request)
         
         # Import IndicatorPage model
-        from catalog.models import IndicatorPage
-        
+        from django.core.cache import cache
+        from catalog.models import IndicatorPage, MetricPage, SOPPage
+
         # Get the latest 3 published indicators
         context['latest_entries'] = IndicatorPage.objects.live().order_by('-first_published_at')[:3]
+
+        # Automatic statistics counts (cached for 5 minutes)
+        cache_key = 'home_stats_v1'
+        stats = cache.get(cache_key)
+        if not stats:
+            stats = {
+                'indicator_count': IndicatorPage.objects.live().count(),
+                'metric_count': MetricPage.objects.live().count(),
+                'sop_count': SOPPage.objects.live().count(),
+                'dimension_count': IndicatorPage.objects.live().exclude(dimension='').values_list('dimension', flat=True).distinct().count(),
+            }
+            cache.set(cache_key, stats, 300)  # 5 minutes
+
+        context['indicator_count'] = stats.get('indicator_count', 0)
+        context['metric_count'] = stats.get('metric_count', 0)
+        context['sop_count'] = stats.get('sop_count', 0)
+        context['dimension_count'] = stats.get('dimension_count', 0)
+
+        # Example topic chips (can be driven from data later)
+        context['topic_chips'] = [
+            'Food security', 'Water resources', 'Infrastructure', 'Ecosystems', 'Health'
+        ]
         
         return context
 
@@ -129,10 +152,40 @@ class ContentBlock(blocks.StreamBlock):
 
 class AboutPage(Page):
     """About page with editable rich content."""
-    
+
     subtitle = models.CharField(max_length=255, blank=True, help_text="Subtitle shown below the title")
     body = StreamField(ContentBlock(), use_json_field=True, blank=True)
-    
+
+    # Number of partner institutions shown on the page (keep in sync with the
+    # partner cards rendered in about_page.html).
+    PARTNER_COUNT = 2
+
+    def get_context(self, request):
+        context = super().get_context(request)
+
+        from django.core.cache import cache
+        from catalog.models import IndicatorPage, MetricPage, SOPPage
+
+        # Reuse the same cached statistics the Home page computes so the
+        # numbers shown here match the real, live counts.
+        cache_key = 'home_stats_v1'
+        stats = cache.get(cache_key)
+        if not stats:
+            stats = {
+                'indicator_count': IndicatorPage.objects.live().count(),
+                'metric_count': MetricPage.objects.live().count(),
+                'sop_count': SOPPage.objects.live().count(),
+                'dimension_count': IndicatorPage.objects.live().exclude(dimension='').values_list('dimension', flat=True).distinct().count(),
+            }
+            cache.set(cache_key, stats, 300)  # 5 minutes
+
+        context['indicator_count'] = stats.get('indicator_count', 0)
+        context['metric_count'] = stats.get('metric_count', 0)
+        context['sop_count'] = stats.get('sop_count', 0)
+        context['dimension_count'] = stats.get('dimension_count', 0)
+        context['partner_count'] = self.PARTNER_COUNT
+        return context
+
     content_panels = Page.content_panels + [
         FieldPanel('subtitle'),
         FieldPanel('body'),

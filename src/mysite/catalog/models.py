@@ -83,11 +83,33 @@ class MetricPage(BaseWikiPage):
     # Metric-specific attributes
     description = RichTextField(features=["h2", "h3", "bold", "italic", "ol", "ul", "link"], blank=True)
     purpose = RichTextField(features=["h2", "h3", "bold", "italic", "ol", "ul", "link"], blank=True)
+
+    # Adaptation Tracking Function (shown below Purpose). The two booleans render
+    # as checkboxes; the rich text holds the accompanying short description.
+    tracks_vulnerability = models.BooleanField(
+        "Tracking vulnerability", default=False
+    )
+    tracks_intervention_impacts = models.BooleanField(
+        "Assessing intervention impacts", default=False
+    )
+    adaptation_tracking_function = RichTextField(
+        features=["bold", "italic", "ol", "ul", "link"],
+        blank=True,
+        help_text="Short description of how this metric supports adaptation tracking.",
+    )
     entry_author = models.CharField(max_length=255, blank=True)
 
     content_panels = BaseWikiPage.content_panels + [
         FieldPanel("description"),
         FieldPanel("purpose"),
+        MultiFieldPanel(
+            [
+                FieldPanel("tracks_vulnerability"),
+                FieldPanel("tracks_intervention_impacts"),
+                FieldPanel("adaptation_tracking_function"),
+            ],
+            heading="Adaptation Tracking Function",
+        ),
     ]
 
     promote_panels = Page.promote_panels + [
@@ -99,6 +121,31 @@ class MetricPage(BaseWikiPage):
     ]
 
     template = "catalog/metric_page.html"
+
+    def get_context(self, request, *args, **kwargs):
+        context = super().get_context(request, *args, **kwargs)
+        method_pages = self.get_children().type(MethodPage).live().specific()
+        sop_pages = self.get_children().type(SOPPage).live().specific()
+        parent = self.get_parent().specific if self.get_parent() else None
+        related_metrics = []
+        if parent and isinstance(parent, IndicatorPage):
+            related_metrics = (
+                parent.get_children()
+                .type(MetricPage)
+                .live()
+                .exclude(id=self.id)
+                .specific()
+            )
+        context.update(
+            {
+                "method_pages": method_pages,
+                "sop_pages": sop_pages,
+                "method_count": method_pages.count(),
+                "sop_count": sop_pages.count(),
+                "related_metrics": related_metrics,
+            }
+        )
+        return context
 
     def clean(self):
         super().clean()
@@ -125,6 +172,22 @@ class MethodPage(BaseWikiPage):
     # Method-specific fields
     description = RichTextField(features=["h2", "h3", "bold", "italic", "ol", "ul", "link"], blank=True)
     resolution = models.CharField(max_length=150, blank=True)
+
+    # Short descriptor chips shown next to the method title (see the Methods cards
+    # on the Metric page). All optional — chips only render when filled.
+    method_type = models.CharField(
+        max_length=100, blank=True,
+        help_text="Primary approach, e.g. 'Satellite', 'Model', 'Field + Lab'.",
+    )
+    cost_level = models.CharField(
+        max_length=100, blank=True,
+        help_text="Cost / accuracy note, e.g. 'Low cost', 'High accuracy'.",
+    )
+    scale = models.CharField(
+        max_length=100, blank=True,
+        help_text="Scale / output note, e.g. 'Spatial', 'Plot level', 'Scenario'.",
+    )
+
     advantages = RichTextField(blank=True)
     limitations = RichTextField(blank=True)
     use_case = RichTextField(blank=True)
@@ -132,6 +195,9 @@ class MethodPage(BaseWikiPage):
     content_panels = BaseWikiPage.content_panels + [
         FieldPanel("description"),
         FieldPanel("resolution"),
+        FieldPanel("method_type"),
+        FieldPanel("cost_level"),
+        FieldPanel("scale"),
         FieldPanel("advantages"),
         FieldPanel("limitations"),
         FieldPanel("use_case"),
@@ -142,6 +208,17 @@ class MethodPage(BaseWikiPage):
     ]
 
     template = "catalog/method_page.html"
+
+    # Rich text rendered as tidy lists (loose paragraphs become bullets).
+    @property
+    def advantages_html(self):
+        from .richtext_utils import render_list
+        return render_list(self.advantages, "ul")
+
+    @property
+    def limitations_html(self):
+        from .richtext_utils import render_list
+        return render_list(self.limitations, "ul")
 
     def clean(self):
         super().clean()
@@ -176,6 +253,18 @@ class SOPPage(BaseWikiPage):
     geographic_scale = models.CharField(max_length=150, blank=True)
     technical_capacity = RichTextField(blank=True)
 
+    # Surfaced in the SOP preview card so users see what they're getting at a glance.
+    method_type = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Primary method type, e.g. '🛰️ Satellite', 'Model', 'Field + Lab'.",
+    )
+    estimated_time = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Estimated effort/time, e.g. '~2 hours', '1–2 days'.",
+    )
+
     activities_and_steps = RichTextField(blank=True)
     options_enhancing_robustness = RichTextField(blank=True)
     options_reducing_costs = RichTextField(blank=True)
@@ -192,6 +281,8 @@ class SOPPage(BaseWikiPage):
         FieldPanel("units"),
         FieldPanel("frequency"),
         FieldPanel("geographic_scale"),
+        FieldPanel("method_type"),
+        FieldPanel("estimated_time"),
         FieldPanel("technical_capacity"),
         FieldPanel("activities_and_steps"),
         FieldPanel("options_enhancing_robustness"),
@@ -208,6 +299,45 @@ class SOPPage(BaseWikiPage):
 
     template = "catalog/sop_page.html"
 
+    @property
+    def measurement_step_count(self):
+        """Number of measurement steps, derived from the activities_and_steps list items."""
+        import re
+        if not self.activities_and_steps:
+            return 0
+        return len(re.findall(r"<li", self.activities_and_steps))
+
+    # Rich text rendered as tidy lists (loose paragraphs become bullets/numbers).
+    @property
+    def activities_and_steps_html(self):
+        from .richtext_utils import render_list
+        return render_list(self.activities_and_steps, "ol")
+
+    @property
+    def options_enhancing_robustness_html(self):
+        from .richtext_utils import render_list
+        return render_list(self.options_enhancing_robustness, "ul")
+
+    @property
+    def options_reducing_costs_html(self):
+        from .richtext_utils import render_list
+        return render_list(self.options_reducing_costs, "ul")
+
+    @property
+    def data_sources_html(self):
+        from .richtext_utils import render_list
+        return render_list(self.data_sources, "ul")
+
+    @property
+    def available_tools_and_code_html(self):
+        from .richtext_utils import render_list
+        return render_list(self.available_tools_and_code, "ul")
+
+    @property
+    def references_html(self):
+        from .richtext_utils import render_list
+        return render_list(self.references, "ul")
+
     def clean(self):
         super().clean()
         # Enforce max 3 SOPs per metric (SOPs are children of Metric)
@@ -218,6 +348,12 @@ class SOPPage(BaseWikiPage):
                 count += 1
             if count > 3:
                 raise ValidationError({"title": _("Each Metric can only have up to 3 SOPs.")})
+
+    def serve(self, request):
+        parent = self.get_parent().specific if self.get_parent() else None
+        if parent:
+            return HttpResponseRedirect(f"{parent.url}#sop-{self.slug}")
+        return super().serve(request)
 
     class Meta:
         verbose_name = "SOP"

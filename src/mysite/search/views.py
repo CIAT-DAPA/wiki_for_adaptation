@@ -5,22 +5,12 @@ from django.db.models import Q
 
 from wagtail.models import Page
 
-# To enable logging of search queries for use with the "Promoted search results" module
-# <https://docs.wagtail.org/en/stable/reference/contrib/searchpromotions.html>
-# uncomment the following line and the lines indicated in the search function
-# (after adding wagtail.contrib.search_promotions to INSTALLED_APPS):
-
-# from wagtail.contrib.search_promotions.models import Query
-
 
 def search(request):
     search_query = request.GET.get("query", None)
-    page = request.GET.get("page", 1)
-    content_type_filter = request.GET.get("type", None)  # 'indicator', 'metric', 'sop', or None for all
-    category_filter = request.GET.get("category", None)  # Same as content_type_filter but for dropdown
     dimension_filter = request.GET.get("dimension", None)
     indicator_type_filter = request.GET.get("indicator_type", None)
-    geographic_scale_filter = request.GET.get("geographic_scale", None)
+    tracking_function_filter = request.GET.get("tracking_function", None)
 
     indicator_ct = ContentType.objects.get(app_label='catalog', model='indicatorpage')
     metric_ct = ContentType.objects.get(app_label='catalog', model='metricpage')
@@ -28,171 +18,129 @@ def search(request):
     searchable_content_types = [indicator_ct, metric_ct, sop_ct]
 
     # Some requests send query as literal strings like "None" or "null".
-    # Treat them as an empty query.
     if search_query is not None:
         search_query = search_query.strip()
         if search_query.lower() in {"", "none", "null"}:
             search_query = None
 
-    # Normalize empty/all values so they behave as "no specific value"
-    content_type_filter = content_type_filter or None
-    category_filter = category_filter or None
-    dimension_filter = dimension_filter or None
-    indicator_type_filter = indicator_type_filter or None
-    geographic_scale_filter = geographic_scale_filter or None
+    # Normalize filter values: treat empty and "all" as "no filter".
+    def _norm(value):
+        return value if value and value != 'all' else None
 
-    if content_type_filter == 'all':
-        content_type_filter = None
+    dimension_filter = _norm(dimension_filter)
+    indicator_type_filter = _norm(indicator_type_filter)
+    tracking_function_filter = _norm(tracking_function_filter)
 
-    # Apply category filter from dropdown (same as content_type_filter from tabs)
-    if category_filter and category_filter != 'all':
-        content_type_filter = category_filter
-
-    # Treat presence of filter params as explicit filtering intent, even when values are "all".
-    # This keeps URLs like ?dimension=all&indicator_type=all&geographic_scale=all working.
-    has_explicit_filter = any([
-        request.GET.get("type") is not None,
-        request.GET.get("category") is not None,
-        request.GET.get("dimension") is not None,
-        request.GET.get("indicator_type") is not None,
-        request.GET.get("geographic_scale") is not None,
-    ])
-
-    # Search
-    if search_query:
-        search_results = Page.objects.live().filter(content_type__in=searchable_content_types).search(search_query)
-        
-        # Convert search results to a list of PKs to use with regular querysets
-        search_pks = [r.pk for r in search_results]
-        search_results = Page.objects.filter(pk__in=search_pks, content_type__in=searchable_content_types)
-    elif has_explicit_filter:
-        # If no search query but filters were explicitly used (including "all"),
-        # start from all live pages and then apply the selected filters.
-        search_results = Page.objects.live().filter(content_type__in=searchable_content_types)
-    else:
-        # Base search page: show all searchable content types.
-        search_results = Page.objects.live().filter(content_type__in=searchable_content_types)
-
-    # Filter by content type if specified
-    if search_results.exists() and content_type_filter:
-        if content_type_filter == 'indicator':
-            content_type = ContentType.objects.get(app_label='catalog', model='indicatorpage')
-            search_results = search_results.filter(content_type=content_type)
-        elif content_type_filter == 'metric':
-            content_type = ContentType.objects.get(app_label='catalog', model='metricpage')
-            search_results = search_results.filter(content_type=content_type)
-        elif content_type_filter == 'sop':
-            content_type = ContentType.objects.get(app_label='catalog', model='soppage')
-            search_results = search_results.filter(content_type=content_type)
-    
-    # Filter by dimension if specified (only applies to IndicatorPage)
-    if dimension_filter and dimension_filter != 'all':
-        from catalog.models import IndicatorPage
-        indicator_ct = ContentType.objects.get(app_label='catalog', model='indicatorpage')
-        search_results = search_results.filter(
-            content_type=indicator_ct,
-            indicatorpage__dimension=dimension_filter
-        )
-    
-    # Filter by indicator type if specified (only applies to IndicatorPage)
-    if indicator_type_filter and indicator_type_filter != 'all':
-        from catalog.models import IndicatorPage
-        indicator_ct = ContentType.objects.get(app_label='catalog', model='indicatorpage')
-        search_results = search_results.filter(
-            content_type=indicator_ct,
-            indicatorpage__indicator_type=indicator_type_filter
-        )
-    
-    # Filter by geographic scale if specified (only applies to SOPPage)
-    if geographic_scale_filter and geographic_scale_filter != 'all':
-        from catalog.models import SOPPage
-        sop_ct = ContentType.objects.get(app_label='catalog', model='soppage')
-        search_results = search_results.filter(
-            content_type=sop_ct,
-            soppage__geographic_scale=geographic_scale_filter
-        )
-
-    # Calculate counts by type for tabs
-    if search_query:
-        # If there's a search query, use the search results for counts
-        search_pks = [r.pk for r in Page.objects.live().filter(content_type__in=searchable_content_types).search(search_query)]
-        all_results = Page.objects.filter(pk__in=search_pks, content_type__in=searchable_content_types)
-    elif has_explicit_filter:
-        # If filters are used without query, count within searchable content types only
-        all_results = Page.objects.live().filter(content_type__in=searchable_content_types)
-
-        if content_type_filter == 'indicator':
-            all_results = all_results.filter(content_type=indicator_ct)
-        elif content_type_filter == 'metric':
-            all_results = all_results.filter(content_type=metric_ct)
-        elif content_type_filter == 'sop':
-            all_results = all_results.filter(content_type=sop_ct)
-
-        if dimension_filter and dimension_filter != 'all':
-            all_results = all_results.filter(content_type=indicator_ct, indicatorpage__dimension=dimension_filter)
-
-        if indicator_type_filter and indicator_type_filter != 'all':
-            all_results = all_results.filter(content_type=indicator_ct, indicatorpage__indicator_type=indicator_type_filter)
-
-        if geographic_scale_filter and geographic_scale_filter != 'all':
-            all_results = all_results.filter(content_type=sop_ct, soppage__geographic_scale=geographic_scale_filter)
-    else:
-        # If no search query, count all live pages
-        all_results = Page.objects.live().filter(content_type__in=searchable_content_types)
-    
-    indicator_count = all_results.filter(content_type=indicator_ct).count()
-    metric_count = all_results.filter(content_type=metric_ct).count()
-    sop_count = all_results.filter(content_type=sop_ct).count()
-
-    # To log this query for use with the "Promoted search results" module:
-
-    # query = Query.get(search_query)
-    # query.add_hit()
-
-    # Get unique dimensions and authors for filter dropdowns
     from catalog.models import IndicatorPage, MetricPage, SOPPage
-    
-    dimensions = set()
-    indicator_types = set()
-    geographic_scales = set()
-    
-    # Only IndicatorPage has dimension and indicator_type fields
-    dimensions.update(IndicatorPage.objects.live().values_list('dimension', flat=True).distinct())
-    indicator_types.update(IndicatorPage.objects.live().values_list('indicator_type', flat=True).distinct())
-    
-    # Only SOPPage has geographic_scale field
-    geographic_scales.update(SOPPage.objects.live().values_list('geographic_scale', flat=True).distinct())
-    
-    # Remove None and empty values
-    dimensions = sorted([d for d in dimensions if d])
-    indicator_types = sorted([t for t in indicator_types if t])
-    geographic_scales = sorted([g for g in geographic_scales if g])
 
-    # Pagination
-    paginator = Paginator(search_results, 10)
-    try:
-        search_results = paginator.page(page)
-    except PageNotAnInteger:
-        search_results = paginator.page(1)
-    except EmptyPage:
-        search_results = paginator.page(paginator.num_pages)
+    # Base querysets for each column. The page always shows both Indicators and
+    # Metrics; the filters below narrow them with criteria that actually exist
+    # in the data (so no option silently filters nothing).
+    indicator_qs = IndicatorPage.objects.live()
+    metric_qs = MetricPage.objects.live()
+
+    # Free-text search applies across both columns.
+    if search_query:
+        search_pks = {
+            r.pk for r in
+            Page.objects.live().filter(content_type__in=searchable_content_types).search(search_query)
+        }
+        indicator_qs = indicator_qs.filter(pk__in=search_pks)
+        metric_qs = metric_qs.filter(pk__in=search_pks)
+
+    # Dimension / Subdimension are Indicator attributes. They filter Indicators
+    # directly, and Metrics via their parent Indicator so both columns stay in sync.
+    # Matching is normalized (trim + casefold) so a single cleaned dropdown option
+    # still matches records stored with inconsistent whitespace/casing.
+    def _matching_indicator_ids(field, value):
+        target = value.strip().lower()
+        return [
+            obj.pk for obj in IndicatorPage.objects.live().only('pk', field)
+            if (getattr(obj, field) or '').strip().lower() == target
+        ]
+
+    if dimension_filter:
+        indicator_qs = indicator_qs.filter(pk__in=_matching_indicator_ids('dimension', dimension_filter))
+    if indicator_type_filter:
+        indicator_qs = indicator_qs.filter(pk__in=_matching_indicator_ids('indicator_type', indicator_type_filter))
+
+    if dimension_filter or indicator_type_filter:
+        parent_indicators = IndicatorPage.objects.live()
+        if dimension_filter:
+            parent_indicators = parent_indicators.filter(pk__in=_matching_indicator_ids('dimension', dimension_filter))
+        if indicator_type_filter:
+            parent_indicators = parent_indicators.filter(pk__in=_matching_indicator_ids('indicator_type', indicator_type_filter))
+        parent_paths = list(parent_indicators.values_list('path', flat=True))
+        if parent_paths:
+            path_q = Q()
+            for p in parent_paths:
+                path_q |= Q(path__startswith=p)
+            metric_qs = metric_qs.filter(path_q)
+        else:
+            metric_qs = metric_qs.none()
+
+    # Adaptation tracking function is a Metric attribute and filters Metrics only.
+    if tracking_function_filter == 'vulnerability':
+        metric_qs = metric_qs.filter(tracks_vulnerability=True)
+    elif tracking_function_filter == 'intervention':
+        metric_qs = metric_qs.filter(tracks_intervention_impacts=True)
+
+    indicator_qs = indicator_qs.order_by('title')
+    metric_qs = metric_qs.order_by('title')
+
+    indicator_count = indicator_qs.count()
+    metric_count = metric_qs.count()
+    has_results = indicator_count > 0 or metric_count > 0
+
+    # Dropdown options, built from real data so every option matches something.
+    # Collapse near-duplicates (differing only by surrounding whitespace/casing)
+    # so the same label doesn't appear twice, while keeping a value that matches
+    # actual stored records.
+    def _distinct_options(values):
+        seen = {}
+        for v in values:
+            if not v or not v.strip():
+                continue
+            key = v.strip().lower()
+            seen.setdefault(key, v.strip())
+        return sorted(seen.values(), key=str.lower)
+
+    dimensions = _distinct_options(
+        IndicatorPage.objects.live().values_list('dimension', flat=True)
+    )
+    indicator_types = _distinct_options(
+        IndicatorPage.objects.live().values_list('indicator_type', flat=True)
+    )
+
+    # Paginate each column independently (tree order otherwise pushes all metrics
+    # onto later pages, leaving the Metrics column empty on page 1).
+    def _paginate(queryset, page_param):
+        paginator = Paginator(queryset, 10)
+        page_number = request.GET.get(page_param, 1)
+        try:
+            return paginator.page(page_number)
+        except PageNotAnInteger:
+            return paginator.page(1)
+        except EmptyPage:
+            return paginator.page(paginator.num_pages)
+
+    indicator_results = _paginate(indicator_qs, "ipage")
+    metric_results = _paginate(metric_qs, "mpage")
 
     return TemplateResponse(
         request,
         "search/search.html",
         {
             "search_query": search_query,
-            "search_results": search_results,
-            "content_type_filter": content_type_filter,
-            "category_filter": category_filter,
-            "dimension_filter": dimension_filter,
-            "indicator_type_filter": indicator_type_filter,
-            "geographic_scale_filter": geographic_scale_filter,
+            "has_results": has_results,
+            "indicator_results": indicator_results,
+            "metric_results": metric_results,
             "indicator_count": indicator_count,
             "metric_count": metric_count,
-            "sop_count": sop_count,
+            "dimension_filter": dimension_filter,
+            "indicator_type_filter": indicator_type_filter,
+            "tracking_function_filter": tracking_function_filter,
             "dimensions": dimensions,
             "indicator_types": indicator_types,
-            "geographic_scales": geographic_scales,
         },
     )
