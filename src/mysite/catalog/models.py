@@ -172,35 +172,22 @@ class MethodPage(BaseWikiPage):
     # Method-specific fields
     description = RichTextField(features=["h2", "h3", "bold", "italic", "ol", "ul", "link"], blank=True)
     resolution = models.CharField(max_length=150, blank=True)
-
-    # Short descriptor chips shown next to the method title (see the Methods cards
-    # on the Metric page). All optional — chips only render when filled.
-    method_type = models.CharField(
-        max_length=100, blank=True,
-        help_text="Primary approach, e.g. 'Satellite', 'Model', 'Field + Lab'.",
-    )
-    cost_level = models.CharField(
-        max_length=100, blank=True,
-        help_text="Cost / accuracy note, e.g. 'Low cost', 'High accuracy'.",
-    )
-    scale = models.CharField(
-        max_length=100, blank=True,
-        help_text="Scale / output note, e.g. 'Spatial', 'Plot level', 'Scenario'.",
-    )
-
     advantages = RichTextField(blank=True)
     limitations = RichTextField(blank=True)
     use_case = RichTextField(blank=True)
+    resources = RichTextField(
+        features=["bold", "italic", "ol", "ul", "link"],
+        blank=True,
+        help_text="Reference resources for this method. Use the link button to add clickable hyperlinks.",
+    )
 
     content_panels = BaseWikiPage.content_panels + [
         FieldPanel("description"),
         FieldPanel("resolution"),
-        FieldPanel("method_type"),
-        FieldPanel("cost_level"),
-        FieldPanel("scale"),
         FieldPanel("advantages"),
         FieldPanel("limitations"),
         FieldPanel("use_case"),
+        FieldPanel("resources"),
     ]
 
     search_fields = BaseWikiPage.search_fields + [
@@ -220,10 +207,21 @@ class MethodPage(BaseWikiPage):
         from .richtext_utils import render_list
         return render_list(self.limitations, "ul")
 
+    @property
+    def resources_html(self):
+        from .richtext_utils import render_list
+        return render_list(self.resources, "ul")
+
     def clean(self):
         super().clean()
-        # No explicit limit on methods per metric for now
-        pass
+        # Enforce a maximum of 4 Methods per metric.
+        if self.get_parent() and isinstance(self.get_parent().specific, MetricPage):
+            parent = self.get_parent().specific
+            count = parent.get_children().type(MethodPage).exclude(pk=self.pk).count()
+            if not self.pk:
+                count += 1
+            if count > 4:
+                raise ValidationError({"title": _("Each Metric can only have up to 4 Methods.")})
 
     def serve(self, request):
         """
@@ -253,12 +251,6 @@ class SOPPage(BaseWikiPage):
     geographic_scale = models.CharField(max_length=150, blank=True)
     technical_capacity = RichTextField(blank=True)
 
-    # Surfaced in the SOP preview card so users see what they're getting at a glance.
-    method_type = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text="Primary method type, e.g. '🛰️ Satellite', 'Model', 'Field + Lab'.",
-    )
     estimated_time = models.CharField(
         max_length=100,
         blank=True,
@@ -281,7 +273,6 @@ class SOPPage(BaseWikiPage):
         FieldPanel("units"),
         FieldPanel("frequency"),
         FieldPanel("geographic_scale"),
-        FieldPanel("method_type"),
         FieldPanel("estimated_time"),
         FieldPanel("technical_capacity"),
         FieldPanel("activities_and_steps"),
@@ -340,14 +331,15 @@ class SOPPage(BaseWikiPage):
 
     def clean(self):
         super().clean()
-        # Enforce max 3 SOPs per metric (SOPs are children of Metric)
+        # Enforce exactly one SOP per metric (the SOP is the metric's measurement
+        # procedure; the different measurement options live as Methods).
         if self.get_parent() and isinstance(self.get_parent().specific, MetricPage):
             parent = self.get_parent().specific
-            count = parent.get_children().type(SOPPage).count()
+            count = parent.get_children().type(SOPPage).exclude(pk=self.pk).count()
             if not self.pk:
                 count += 1
-            if count > 3:
-                raise ValidationError({"title": _("Each Metric can only have up to 3 SOPs.")})
+            if count > 1:
+                raise ValidationError({"title": _("Each Metric can only have one SOP.")})
 
     def serve(self, request):
         parent = self.get_parent().specific if self.get_parent() else None

@@ -24,10 +24,10 @@
 
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    Dimension
+                    Purpose
                 </label>
                 <select name="dimension" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
-                    <option value="all">All Dimensions</option>
+                    <option value="all">All purposes</option>
                     {% for dim in dimensions %}
                         <option value="{{ dim }}" {% if dimension_filter == dim %}selected{% endif %}>{{ dim }}</option>
                     {% endfor %}
@@ -36,10 +36,10 @@
 
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    Subdimension
+                    Theme
                 </label>
                 <select name="indicator_type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
-                    <option value="all">All Subdimensions</option>
+                    <option value="all">All themes</option>
                     {% for type in indicator_types %}
                         <option value="{{ type }}" {% if indicator_type_filter == type %}selected{% endif %}>{{ type }}</option>
                     {% endfor %}
@@ -48,12 +48,13 @@
 
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    Adaptation tracking function
+                    Indicators
                 </label>
-                <select name="tracking_function" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
-                    <option value="all">All Metrics</option>
-                    <option value="vulnerability" {% if tracking_function_filter == 'vulnerability' %}selected{% endif %}>Tracking vulnerability</option>
-                    <option value="intervention" {% if tracking_function_filter == 'intervention' %}selected{% endif %}>Assessing intervention impacts</option>
+                <select name="indicator" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
+                    <option value="all">All indicators</option>
+                    {% for ind in all_indicators %}
+                        <option value="{{ ind.id }}" {% if indicator_filter == ind.id|stringformat:"s" %}selected{% endif %}>{{ ind.title }}</option>
+                    {% endfor %}
                 </select>
             </div>
         </form>
@@ -61,84 +62,80 @@
 
     {% if has_results %}
 
-    <!-- Results Table -->
-    <div class="grid md:grid-cols-2 gap-8 mb-8">
-        <!-- Indicators Column -->
-        <div>
-            <h3 class="text-xl font-bold text-gray-900 mb-4">Indicators <span class="text-base font-normal text-gray-400">({{ indicator_count }})</span></h3>
-            <div class="space-y-4">
-                {% for result in indicator_results %}
-                    <a href="{% pageurl result %}" class="block bg-white border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md hover:border-blue-400 transition-all">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="inline-block bg-blue-500 text-white text-xs font-bold uppercase px-2 py-1 rounded">indicator</span>
-                            <span class="text-gray-500 text-xs">{{ result.first_published_at|date:"m/d/Y" }}</span>
-                        </div>
-                        <h4 class="text-base font-semibold text-gray-900 mb-2">{{ result.title }}</h4>
+    <!-- Results summary
+    <p class="text-sm text-gray-600 mb-5">
+        <span class="font-semibold text-gray-900">{{ indicator_count }}</span> indicator{{ indicator_count|pluralize }}
+        <span class="text-gray-300 mx-1">·</span>
+        <span class="font-semibold text-gray-900">{{ metric_count }}</span> metric{{ metric_count|pluralize }}
+    </p> -->
 
-                        {% with result.specific as page %}
-                            {% if page.description %}
-                                <p class="text-sm text-gray-600">{{ page.description|striptags|truncatewords:15 }}</p>
-                            {% endif %}
-                        {% endwith %}
-                    </a>
-                {% empty %}
-                    <p class="text-sm text-gray-500">No indicators match your search.</p>
+    <!-- Each indicator, with its metrics nested beneath it -->
+    <div class="space-y-6 mb-8">
+        {% for indicator in indicator_rows %}
+        <div>
+            <!-- Indicator card -->
+            <a href="{% pageurl indicator %}" class="block bg-white border border-gray-200 border-l-4 border-l-blue-500 rounded-lg shadow-sm p-5 hover:shadow-md transition-all group">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="inline-block bg-blue-100 text-blue-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded">indicator</span>
+                        <span class="text-gray-500 text-xs">{{ indicator.first_published_at|date:"M d, Y" }}</span>
+                    </div>
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                        <span class="inline-flex items-center gap-1.5 text-xs text-gray-500"><span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>{{ indicator.metric_list|length }} metric{{ indicator.metric_list|length|pluralize }}</span>
+                        <i class="fas fa-arrow-right text-gray-300 group-hover:text-blue-500 transition-colors"></i>
+                    </div>
+                </div>
+                <h3 class="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">{{ indicator.title }}</h3>
+                {% if indicator.description %}
+                <p class="text-sm text-gray-600 mb-3">{{ indicator.description|striptags|truncatewords:35 }}</p>
+                {% endif %}
+                {% if indicator.dimension or indicator.indicator_type %}
+                <div class="flex flex-wrap gap-2">
+                    {% if indicator.dimension %}<span class="inline-block bg-gray-50 border border-gray-200 text-gray-600 text-xs px-2.5 py-0.5 rounded-full">{{ indicator.dimension }}</span>{% endif %}
+                    {% if indicator.indicator_type %}<span class="inline-block bg-gray-50 border border-gray-200 text-gray-600 text-xs px-2.5 py-0.5 rounded-full">{{ indicator.indicator_type }}</span>{% endif %}
+                </div>
+                {% endif %}
+            </a>
+
+            <!-- Nested metrics -->
+            {% if indicator.metric_list %}
+            <div class="ml-5 md:ml-8 mt-3 space-y-3 border-l-2 border-gray-200 pl-5">
+                {% for metric in indicator.metric_list %}
+                <a href="{% pageurl metric %}" class="block bg-white border border-gray-200 border-l-4 border-l-green-500 rounded-lg shadow-sm p-4 hover:shadow-md transition-all group">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="inline-block bg-green-100 text-green-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded">metric</span>
+                            <span class="text-gray-500 text-xs">{{ metric.first_published_at|date:"M d, Y" }}</span>
+                        </div>
+                        <i class="fas fa-arrow-right text-gray-300 group-hover:text-green-500 transition-colors flex-shrink-0"></i>
+                    </div>
+                    <h4 class="text-base font-semibold text-gray-900 group-hover:text-green-600 transition-colors">{{ metric.title }}</h4>
+                    {% if metric.description %}
+                    <p class="text-sm text-gray-600 mt-1">{{ metric.description|striptags|truncatewords:25 }}</p>
+                    {% else %}
+                    <p class="text-sm text-gray-400 italic mt-1">No description available yet.</p>
+                    {% endif %}
+                </a>
                 {% endfor %}
             </div>
-
-            {% if indicator_results.has_other_pages %}
-            <nav class="flex justify-center items-center gap-2 mt-6">
-                {% if indicator_results.has_previous %}
-                    <a href="?{% if search_query %}query={{ search_query|urlencode }}&{% endif %}{% if dimension_filter %}dimension={{ dimension_filter|urlencode }}&{% endif %}{% if indicator_type_filter %}indicator_type={{ indicator_type_filter|urlencode }}&{% endif %}{% if tracking_function_filter %}tracking_function={{ tracking_function_filter|urlencode }}&{% endif %}{% if metric_results.number %}mpage={{ metric_results.number }}&{% endif %}ipage={{ indicator_results.previous_page_number }}"
-                       class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-100">Previous</a>
-                {% endif %}
-                <span class="px-2 py-1.5 text-sm text-gray-700">Page {{ indicator_results.number }} of {{ indicator_results.paginator.num_pages }}</span>
-                {% if indicator_results.has_next %}
-                    <a href="?{% if search_query %}query={{ search_query|urlencode }}&{% endif %}{% if dimension_filter %}dimension={{ dimension_filter|urlencode }}&{% endif %}{% if indicator_type_filter %}indicator_type={{ indicator_type_filter|urlencode }}&{% endif %}{% if tracking_function_filter %}tracking_function={{ tracking_function_filter|urlencode }}&{% endif %}{% if metric_results.number %}mpage={{ metric_results.number }}&{% endif %}ipage={{ indicator_results.next_page_number }}"
-                       class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-100">Next</a>
-                {% endif %}
-            </nav>
             {% endif %}
         </div>
-
-        <!-- Metrics Column -->
-        <div>
-            <h3 class="text-xl font-bold text-gray-900 mb-4">Metrics <span class="text-base font-normal text-gray-400">({{ metric_count }})</span></h3>
-            <div class="space-y-4">
-                {% for result in metric_results %}
-                    <a href="{% pageurl result %}" class="block bg-white border border-gray-200 rounded-lg shadow-sm p-4 hover:shadow-md hover:border-green-400 transition-all">
-                        <div class="flex items-center gap-2 mb-2">
-                            <span class="inline-block bg-green-500 text-white text-xs font-bold uppercase px-2 py-1 rounded">metric</span>
-                            <span class="text-gray-500 text-xs">{{ result.first_published_at|date:"m/d/Y" }}</span>
-                        </div>
-                        <h4 class="text-base font-semibold text-gray-900 mb-2">{{ result.title }}</h4>
-
-                        {% with result.specific as page %}
-                            {% if page.description %}
-                                <p class="text-sm text-gray-600">{{ page.description|striptags|truncatewords:15 }}</p>
-                            {% endif %}
-                        {% endwith %}
-                    </a>
-                {% empty %}
-                    <p class="text-sm text-gray-500">No metrics match your search.</p>
-                {% endfor %}
-            </div>
-
-            {% if metric_results.has_other_pages %}
-            <nav class="flex justify-center items-center gap-2 mt-6">
-                {% if metric_results.has_previous %}
-                    <a href="?{% if search_query %}query={{ search_query|urlencode }}&{% endif %}{% if dimension_filter %}dimension={{ dimension_filter|urlencode }}&{% endif %}{% if indicator_type_filter %}indicator_type={{ indicator_type_filter|urlencode }}&{% endif %}{% if tracking_function_filter %}tracking_function={{ tracking_function_filter|urlencode }}&{% endif %}{% if indicator_results.number %}ipage={{ indicator_results.number }}&{% endif %}mpage={{ metric_results.previous_page_number }}"
-                       class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-100">Previous</a>
-                {% endif %}
-                <span class="px-2 py-1.5 text-sm text-gray-700">Page {{ metric_results.number }} of {{ metric_results.paginator.num_pages }}</span>
-                {% if metric_results.has_next %}
-                    <a href="?{% if search_query %}query={{ search_query|urlencode }}&{% endif %}{% if dimension_filter %}dimension={{ dimension_filter|urlencode }}&{% endif %}{% if indicator_type_filter %}indicator_type={{ indicator_type_filter|urlencode }}&{% endif %}{% if tracking_function_filter %}tracking_function={{ tracking_function_filter|urlencode }}&{% endif %}{% if indicator_results.number %}ipage={{ indicator_results.number }}&{% endif %}mpage={{ metric_results.next_page_number }}"
-                       class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-100">Next</a>
-                {% endif %}
-            </nav>
-            {% endif %}
-        </div>
+        {% endfor %}
     </div>
+
+    {% if indicator_rows.has_other_pages %}
+    <nav class="flex justify-center items-center gap-2 mt-8">
+        {% if indicator_rows.has_previous %}
+            <a href="?{% if search_query %}query={{ search_query|urlencode }}&{% endif %}{% if dimension_filter %}dimension={{ dimension_filter|urlencode }}&{% endif %}{% if indicator_type_filter %}indicator_type={{ indicator_type_filter|urlencode }}&{% endif %}{% if indicator_filter %}indicator={{ indicator_filter|urlencode }}&{% endif %}page={{ indicator_rows.previous_page_number }}"
+               class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-100">Previous</a>
+        {% endif %}
+        <span class="px-2 py-2 text-sm text-gray-700">Page {{ indicator_rows.number }} of {{ indicator_rows.paginator.num_pages }}</span>
+        {% if indicator_rows.has_next %}
+            <a href="?{% if search_query %}query={{ search_query|urlencode }}&{% endif %}{% if dimension_filter %}dimension={{ dimension_filter|urlencode }}&{% endif %}{% if indicator_type_filter %}indicator_type={{ indicator_type_filter|urlencode }}&{% endif %}{% if indicator_filter %}indicator={{ indicator_filter|urlencode }}&{% endif %}page={{ indicator_rows.next_page_number }}"
+               class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-100">Next</a>
+        {% endif %}
+    </nav>
+    {% endif %}
 
     {% elif search_query %}
     <div class="text-center py-12">
