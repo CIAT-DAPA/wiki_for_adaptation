@@ -1,0 +1,56 @@
+{% load wagtailcore_tags %}
+{% if method_pages %}
+<section id="method-options-{{ sop_slug|default:'metric' }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
+  <h4 class="text-lg font-semibold text-gray-900 mb-4">Method options</h4>
+  <div class="space-y-6">
+    {% for child in method_pages %}
+    <div id="method-{{ child.slug }}" class="border border-gray-200 rounded-lg p-5 scroll-mt-20">
+      <div class="flex items-start gap-3 mb-3">
+        <span class="w-7 h-7 rounded-full bg-brand-green text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{{ forloop.counter }}</span>
+        <h5 class="text-base font-semibold text-gray-900 mt-0.5">{{ child.title }}</h5>
+      </div>
+
+      {% if child.description %}
+      <div class="prose prose-sm max-w-none text-gray-700 mb-3">{{ child.description|richtext }}</div>
+      {% endif %}
+
+      {% if child.resolution %}
+      <div class="flex items-baseline gap-2 mb-3">
+        <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Resolution</span>
+        <span class="text-sm text-gray-700">{{ child.resolution }}</span>
+      </div>
+      {% endif %}
+
+      <div class="grid md:grid-cols-2 gap-4 mb-3">
+        {% if child.advantages %}
+        <div class="rounded-lg bg-emerald-50 border border-emerald-100 p-4">
+          <h6 class="flex items-center gap-2 text-sm font-semibold text-emerald-800 mb-2"><i class="fas fa-circle-check"></i> Advantages</h6>
+          <div class="prose prose-sm max-w-none text-gray-700">{{ child.advantages_html }}</div>
+        </div>
+        {% endif %}
+        {% if child.limitations %}
+        <div class="rounded-lg bg-amber-50 border border-amber-100 p-4">
+          <h6 class="flex items-center gap-2 text-sm font-semibold text-amber-800 mb-2"><i class="fas fa-triangle-exclamation"></i> Limitations</h6>
+          <div class="prose prose-sm max-w-none text-gray-700">{{ child.limitations_html }}</div>
+        </div>
+        {% endif %}
+      </div>
+
+      {% if child.use_case %}
+      <div class="mb-3">
+        <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Use case</div>
+        <div class="prose prose-sm max-w-none text-gray-700">{{ child.use_case|richtext }}</div>
+      </div>
+      {% endif %}
+
+      {% if child.resources %}
+      <div>
+        <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Resources</div>
+        <div class="prose prose-sm max-w-none text-gray-700">{{ child.resources_html }}</div>
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}

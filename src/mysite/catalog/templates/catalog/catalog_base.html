@@ -6,7 +6,7 @@
 <div class="max-w-7xl mx-auto px-4 py-6 flex gap-8">
   <!-- Left Sidebar -->
   <aside class="hidden lg:block w-64 flex-shrink-0">
-    <div class="sticky top-20 space-y-4">
+    <div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto space-y-4 pr-2 -mr-2">
       {% block sidebar_top %}
       {# Pages may inject context cards (e.g. Parent Indicator, Measures Metric) here #}
       {% endblock %}

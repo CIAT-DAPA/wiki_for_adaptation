@@ -35,11 +35,9 @@ class HomePage(Page):
         context['sop_count'] = stats.get('sop_count', 0)
         context['dimension_count'] = stats.get('dimension_count', 0)
 
-        # Example topic chips (can be driven from data later)
-        context['topic_chips'] = [
-            'Food security', 'Water resources', 'Infrastructure', 'Ecosystems', 'Health'
-        ]
-        
+        # Keyword chips under the hero: real indicators, each linking to its page.
+        context['indicator_chips'] = IndicatorPage.objects.live().order_by('title')[:8]
+
         return context
 
 
@@ -150,53 +148,143 @@ class ContentBlock(blocks.StreamBlock):
         icon = "doc-full"
 
 
+class AboutFeatureBlock(blocks.StructBlock):
+    """A 'Key features' card with a coloured icon."""
+    icon = blocks.ChoiceBlock(choices=[
+        ('fa-people-group', 'People (Community)'),
+        ('fa-globe', 'Globe'),
+        ('fa-chart-line', 'Chart'),
+        ('fa-leaf', 'Leaf'),
+        ('fa-bullseye', 'Target'),
+        ('fa-shield', 'Shield'),
+        ('fa-circle-check', 'Check'),
+    ], default='fa-leaf')
+    color = blocks.ChoiceBlock(choices=[
+        ('purple', 'Purple'), ('blue', 'Blue'), ('emerald', 'Green'),
+        ('orange', 'Orange'), ('rose', 'Rose'),
+    ], default='emerald')
+    title = blocks.CharBlock(max_length=120)
+    description = blocks.TextBlock()
+
+    class Meta:
+        icon = 'pick'
+        label = 'Feature'
+
+
+class AboutPartnerBlock(blocks.StructBlock):
+    """A partner institution card (clickable to its official site)."""
+    name = blocks.CharBlock(max_length=150)
+    tag = blocks.CharBlock(max_length=80, required=False, help_text="Small green label, e.g. 'Research & data'")
+    description = blocks.TextBlock(required=False)
+    logo = ImageChooserBlock(required=False, help_text="Upload a logo (preferred)")
+    logo_url = blocks.CharBlock(max_length=255, required=False, help_text="Or a static path, e.g. images/ilri_logo.jpg")
+    url = blocks.URLBlock(required=False, help_text="Official website (opens in a new tab)")
+
+    class Meta:
+        icon = 'group'
+        label = 'Partner'
+
+
+class AboutTeamBlock(blocks.StructBlock):
+    """A team member card with an initials avatar."""
+    initials = blocks.CharBlock(max_length=3)
+    color = blocks.ChoiceBlock(choices=[
+        ('blue', 'Blue'), ('emerald', 'Green'), ('amber', 'Amber'),
+        ('purple', 'Purple'), ('rose', 'Rose'),
+    ], default='blue')
+    name = blocks.CharBlock(max_length=120)
+    role = blocks.CharBlock(max_length=120, required=False)
+    description = blocks.TextBlock(required=False)
+
+    class Meta:
+        icon = 'user'
+        label = 'Team member'
+
+
+class AboutContactBlock(blocks.StructBlock):
+    """A 'Get in touch' card with a call-to-action button."""
+    icon = blocks.ChoiceBlock(choices=[
+        ('fa-envelope', 'Envelope'), ('fa-plus', 'Plus'),
+        ('fa-comment', 'Comment'), ('fa-handshake', 'Handshake'),
+    ], default='fa-envelope')
+    title = blocks.CharBlock(max_length=120)
+    description = blocks.TextBlock(required=False)
+    button_label = blocks.CharBlock(max_length=60, required=False)
+    button_url = blocks.CharBlock(max_length=255, required=False)
+    primary = blocks.BooleanBlock(required=False, help_text="Green (filled) button. Leave unchecked for an outline button.")
+
+    class Meta:
+        icon = 'mail'
+        label = 'Contact card'
+
+
 class AboutPage(Page):
-    """About page with editable rich content."""
+    """About page — fully editable from the admin without touching HTML."""
 
-    subtitle = models.CharField(max_length=255, blank=True, help_text="Subtitle shown below the title")
-    body = StreamField(ContentBlock(), use_json_field=True, blank=True)
+    # Hero
+    badge_text = models.CharField(max_length=80, blank=True, default="About the project")
+    hero_title = models.CharField(max_length=255, default="Built to standardize how adaptation gets measured")
+    hero_highlight = models.CharField(
+        max_length=80, blank=True, default="standardize",
+        help_text="A word within the title shown in green (optional).",
+    )
+    hero_intro = models.TextField(blank=True)
 
-    # Number of partner institutions shown on the page (keep in sync with the
-    # partner cards rendered in about_page.html).
-    PARTNER_COUNT = 2
+    # About this project
+    about_heading = models.CharField(max_length=120, blank=True, default="About this project")
+    about_body = RichTextField(blank=True, features=["bold", "italic", "link", "ol", "ul"])
+    about_tags = StreamField([('tag', blocks.CharBlock(label="Tag"))], use_json_field=True, blank=True)
 
-    def get_context(self, request):
-        context = super().get_context(request)
+    # Sections
+    key_features = StreamField([('feature', AboutFeatureBlock())], use_json_field=True, blank=True)
+    partners = StreamField([('partner', AboutPartnerBlock())], use_json_field=True, blank=True)
+    team = StreamField([('member', AboutTeamBlock())], use_json_field=True, blank=True)
 
-        from django.core.cache import cache
-        from catalog.models import IndicatorPage, MetricPage, SOPPage
+    # Get in touch
+    contact_heading = models.CharField(max_length=120, blank=True, default="Get in touch")
+    contact_cards = StreamField([('card', AboutContactBlock())], use_json_field=True, blank=True)
 
-        # Reuse the same cached statistics the Home page computes so the
-        # numbers shown here match the real, live counts.
-        cache_key = 'home_stats_v1'
-        stats = cache.get(cache_key)
-        if not stats:
-            stats = {
-                'indicator_count': IndicatorPage.objects.live().count(),
-                'metric_count': MetricPage.objects.live().count(),
-                'sop_count': SOPPage.objects.live().count(),
-                'dimension_count': IndicatorPage.objects.live().exclude(dimension='').values_list('dimension', flat=True).distinct().count(),
-            }
-            cache.set(cache_key, stats, 300)  # 5 minutes
-
-        context['indicator_count'] = stats.get('indicator_count', 0)
-        context['metric_count'] = stats.get('metric_count', 0)
-        context['sop_count'] = stats.get('sop_count', 0)
-        context['dimension_count'] = stats.get('dimension_count', 0)
-        context['partner_count'] = self.PARTNER_COUNT
-        return context
+    @property
+    def hero_title_html(self):
+        """Render the hero title with the highlight word wrapped in a green span."""
+        from django.utils.html import escape
+        from django.utils.safestring import mark_safe
+        title = self.hero_title or ""
+        hl = (self.hero_highlight or "").strip()
+        if hl and hl in title:
+            before, _, after = title.partition(hl)
+            return mark_safe(
+                f'{escape(before)}<span class="text-brand-green">{escape(hl)}</span>{escape(after)}'
+            )
+        return escape(title)
 
     content_panels = Page.content_panels + [
-        FieldPanel('subtitle'),
-        FieldPanel('body'),
+        MultiFieldPanel([
+            FieldPanel('badge_text'),
+            FieldPanel('hero_title'),
+            FieldPanel('hero_highlight'),
+            FieldPanel('hero_intro'),
+        ], heading="Hero"),
+        MultiFieldPanel([
+            FieldPanel('about_heading'),
+            FieldPanel('about_body'),
+            FieldPanel('about_tags'),
+        ], heading="About this project"),
+        FieldPanel('key_features'),
+        FieldPanel('partners'),
+        FieldPanel('team'),
+        MultiFieldPanel([
+            FieldPanel('contact_heading'),
+            FieldPanel('contact_cards'),
+        ], heading="Get in touch"),
     ]
-    
+
     promote_panels = [
         MultiFieldPanel(Page.promote_panels, "Common page configuration"),
     ]
-    
+
     max_count = 1  # Only allow one About page
-    
+
     class Meta:
         verbose_name = "About Page"
 

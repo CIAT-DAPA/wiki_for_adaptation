@@ -269,6 +269,10 @@ OIDC_CALLBACK_PATH = "/oidc/callback/"  # Default callback path
 # Authentication redirect URLs
 OIDC_AUTHENTICATION_CALLBACK_URL = "oidc_authentication_callback"
 
+# Custom callback view: fails gracefully with a friendly page instead of a raw
+# traceback when Keycloak/OIDC login fails.
+OIDC_CALLBACK_CLASS = "mysite.oidc_views.CustomOIDCAuthenticationCallbackView"
+
 # Google reCAPTCHA settings
 # Get your keys at: https://www.google.com/recaptcha/admin
 RECAPTCHA_PUBLIC_KEY = os.environ.get("RECAPTCHA_PUBLIC_KEY", "")

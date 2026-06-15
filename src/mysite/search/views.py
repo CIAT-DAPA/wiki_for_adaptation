@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.template.response import TemplateResponse
 from django.contrib.contenttypes.models import ContentType
@@ -10,7 +12,7 @@ def search(request):
     search_query = request.GET.get("query", None)
     dimension_filter = request.GET.get("dimension", None)
     indicator_type_filter = request.GET.get("indicator_type", None)
-    tracking_function_filter = request.GET.get("tracking_function", None)
+    indicator_filter = request.GET.get("indicator", None)
 
     indicator_ct = ContentType.objects.get(app_label='catalog', model='indicatorpage')
     metric_ct = ContentType.objects.get(app_label='catalog', model='metricpage')
@@ -29,7 +31,7 @@ def search(request):
 
     dimension_filter = _norm(dimension_filter)
     indicator_type_filter = _norm(indicator_type_filter)
-    tracking_function_filter = _norm(tracking_function_filter)
+    indicator_filter = _norm(indicator_filter)
 
     from catalog.models import IndicatorPage, MetricPage, SOPPage
 
@@ -79,18 +81,47 @@ def search(request):
         else:
             metric_qs = metric_qs.none()
 
-    # Adaptation tracking function is a Metric attribute and filters Metrics only.
-    if tracking_function_filter == 'vulnerability':
-        metric_qs = metric_qs.filter(tracks_vulnerability=True)
-    elif tracking_function_filter == 'intervention':
-        metric_qs = metric_qs.filter(tracks_intervention_impacts=True)
+    # A specific indicator selection narrows everything to that one indicator
+    # (and the metrics nested beneath it).
+    if indicator_filter:
+        indicator_qs = indicator_qs.filter(pk=indicator_filter)
+        selected = IndicatorPage.objects.live().filter(pk=indicator_filter).first()
+        if selected:
+            metric_qs = metric_qs.filter(path__startswith=selected.path)
+        else:
+            metric_qs = metric_qs.none()
 
     indicator_qs = indicator_qs.order_by('title')
-    metric_qs = metric_qs.order_by('title')
+    metric_qs = metric_qs.order_by('path')
 
-    indicator_count = indicator_qs.count()
-    metric_count = metric_qs.count()
-    has_results = indicator_count > 0 or metric_count > 0
+    # Group matching metrics under their parent indicator's tree path.
+    metrics_by_parent = defaultdict(list)
+    for metric in metric_qs:
+        metrics_by_parent[metric.path[:-metric.steplen]].append(metric)
+
+    # Indicators to display: those matching the indicator-level filters, plus the
+    # parents of any matching metric (so a metric search hit still appears under
+    # its indicator even when the indicator itself didn't match the query).
+    display_ids = set(indicator_qs.values_list('id', flat=True))
+    if metrics_by_parent:
+        display_ids |= set(
+            IndicatorPage.objects.live()
+            .filter(path__in=list(metrics_by_parent.keys()))
+            .values_list('id', flat=True)
+        )
+    display_indicators = (
+        IndicatorPage.objects.live().filter(id__in=display_ids).order_by('title')
+    )
+
+    # One row per indicator with its matching metrics nested.
+    rows = []
+    for indicator in display_indicators:
+        indicator.metric_list = metrics_by_parent.get(indicator.path, [])
+        rows.append(indicator)
+
+    indicator_count = len(rows)
+    metric_count = sum(len(ind.metric_list) for ind in rows)
+    has_results = bool(rows)
 
     # Dropdown options, built from real data so every option matches something.
     # Collapse near-duplicates (differing only by surrounding whitespace/casing)
@@ -111,21 +142,18 @@ def search(request):
     indicator_types = _distinct_options(
         IndicatorPage.objects.live().values_list('indicator_type', flat=True)
     )
+    # Full list of indicators for the Indicators dropdown.
+    all_indicators = IndicatorPage.objects.live().order_by('title')
 
-    # Paginate each column independently (tree order otherwise pushes all metrics
-    # onto later pages, leaving the Metrics column empty on page 1).
-    def _paginate(queryset, page_param):
-        paginator = Paginator(queryset, 10)
-        page_number = request.GET.get(page_param, 1)
-        try:
-            return paginator.page(page_number)
-        except PageNotAnInteger:
-            return paginator.page(1)
-        except EmptyPage:
-            return paginator.page(paginator.num_pages)
-
-    indicator_results = _paginate(indicator_qs, "ipage")
-    metric_results = _paginate(metric_qs, "mpage")
+    # Paginate by indicator (one row each, with its metrics nested).
+    paginator = Paginator(rows, 10)
+    page_number = request.GET.get('page', 1)
+    try:
+        indicator_rows = paginator.page(page_number)
+    except PageNotAnInteger:
+        indicator_rows = paginator.page(1)
+    except EmptyPage:
+        indicator_rows = paginator.page(paginator.num_pages)
 
     return TemplateResponse(
         request,
@@ -133,14 +161,14 @@ def search(request):
         {
             "search_query": search_query,
             "has_results": has_results,
-            "indicator_results": indicator_results,
-            "metric_results": metric_results,
+            "indicator_rows": indicator_rows,
             "indicator_count": indicator_count,
             "metric_count": metric_count,
             "dimension_filter": dimension_filter,
             "indicator_type_filter": indicator_type_filter,
-            "tracking_function_filter": tracking_function_filter,
+            "indicator_filter": indicator_filter,
             "dimensions": dimensions,
             "indicator_types": indicator_types,
+            "all_indicators": all_indicators,
         },
     )

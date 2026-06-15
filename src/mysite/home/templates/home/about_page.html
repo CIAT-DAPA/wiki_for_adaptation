@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load wagtailcore_tags static %}
+{% load wagtailcore_tags wagtailimages_tags static %}
 
 {% block title %}{{ page.title }}{% endblock %}
 
@@ -7,155 +7,113 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
 
   <!-- Badge -->
+  {% if page.badge_text %}
   <div class="mb-4">
-    <span class="inline-block bg-emerald-500 text-white text-xs font-bold uppercase px-3 py-1 rounded">About the project</span>
+    <span class="inline-block bg-emerald-500 text-white text-xs font-bold uppercase px-3 py-1 rounded">{{ page.badge_text }}</span>
   </div>
+  {% endif %}
 
   <!-- Title -->
-  <h1 class="text-4xl font-bold text-gray-900 mb-4">
-    Built to <span class="text-brand-green">standardize</span> how adaptation gets measured
-  </h1>
-  <p class="text-lg text-gray-600 mb-8">
-    The Adaptation Tracking Wiki is a collaborative, open knowledge base providing standardized
-    indicators, metrics, and SOPs for practitioners and policymakers tracking climate change
-    adaptation worldwide.
-  </p>
-
-  <!-- Stat pills (live counts, matching the Home page) -->
-  <div class="flex flex-wrap gap-3 mb-4">
-    <div class="inline-flex items-baseline gap-1.5 border border-gray-200 rounded-lg px-4 py-2">
-      <span class="text-base font-bold text-gray-900">{{ indicator_count }}</span>
-      <span class="text-sm text-gray-500">indicators</span>
-    </div>
-    <div class="inline-flex items-baseline gap-1.5 border border-gray-200 rounded-lg px-4 py-2">
-      <span class="text-base font-bold text-gray-900">{{ metric_count }}</span>
-      <span class="text-sm text-gray-500">metrics</span>
-    </div>
-    <div class="inline-flex items-baseline gap-1.5 border border-gray-200 rounded-lg px-4 py-2">
-      <span class="text-base font-bold text-gray-900">{{ sop_count }}</span>
-      <span class="text-sm text-gray-500">SOPs</span>
-    </div>
-    <div class="inline-flex items-baseline gap-1.5 border border-gray-200 rounded-lg px-4 py-2">
-      <span class="text-base font-bold text-gray-900">{{ dimension_count }}</span>
-      <span class="text-sm text-gray-500">dimensions</span>
-    </div>
-    <div class="inline-flex items-baseline gap-1.5 border border-gray-200 rounded-lg px-4 py-2">
-      <span class="text-base font-bold text-gray-900">{{ partner_count }}</span>
-      <span class="text-sm text-gray-500">partner institutions</span>
-    </div>
-  </div>
+  <h1 class="text-4xl font-bold text-gray-900 mb-4">{{ page.hero_title_html }}</h1>
+  {% if page.hero_intro %}
+  <p class="text-lg text-gray-600 mb-8">{{ page.hero_intro }}</p>
+  {% endif %}
 
   <!-- About this project -->
-  <h2 class="text-2xl font-bold text-gray-900 mt-8 mb-4">About this project</h2>
+  {% if page.about_heading or page.about_body or page.about_tags %}
+  {% if page.about_heading %}<h2 class="text-2xl font-bold text-gray-900 mt-8 mb-4">{{ page.about_heading }}</h2>{% endif %}
   <div class="bg-white border border-gray-200 border-l-4 border-l-brand-green rounded-lg shadow-sm p-6 mb-8">
-    <p class="text-gray-700 leading-relaxed">
-      The Adaptation Tracking Wiki was developed as part of the
-      <a href="#" class="text-brand-green font-medium hover:underline">Adaptation Insights project</a>,
-      aimed at enhancing understanding of climate adaptation tracking and providing practical tools
-      for assessing adaptation effectiveness. As the wiki grows, we welcome additional partners and
-      contributors to expand its reach and impact.
-    </p>
+    <div class="prose max-w-none text-gray-700 leading-relaxed">{{ page.about_body|richtext }}</div>
+    {% if page.about_tags %}
     <div class="border-t border-gray-100 mt-5 pt-4 flex flex-wrap gap-2">
-      <span class="inline-flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1 text-xs text-gray-600">Adaptation Insights project</span>
-      <span class="inline-flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1 text-xs text-gray-600"><i class="far fa-calendar text-gray-400"></i> 2024 – 2026</span>
-      <span class="inline-flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1 text-xs text-gray-600">Funded by the Gates Foundation</span>
+      {% for tag in page.about_tags %}
+      <span class="inline-flex items-center gap-1.5 border border-gray-200 rounded-full px-3 py-1 text-xs text-gray-600">{{ tag.value }}</span>
+      {% endfor %}
     </div>
+    {% endif %}
   </div>
+  {% endif %}
 
   <!-- Key features -->
+  {% if page.key_features %}
   <h2 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Key features</h2>
   <div class="grid md:grid-cols-3 gap-6 mb-8">
+    {% for block in page.key_features %}
     <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-      <div class="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center mb-4">
-        <i class="fas fa-people-group"></i>
+      <div class="w-10 h-10 rounded-lg bg-{{ block.value.color }}-100 text-{{ block.value.color }}-600 flex items-center justify-center mb-4">
+        <i class="fas {{ block.value.icon }}"></i>
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">Community driven</h3>
-      <p class="text-gray-700">Built collaboratively with people active in adaptation programs and research. Wiki contributors can update entries to reflect the state of the art. Standard operating procedures reflect best practices and are reviewed to ensure accuracy and scientific rigor.</p>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ block.value.title }}</h3>
+      <p class="text-gray-700">{{ block.value.description }}</p>
     </div>
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-      <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center mb-4">
-        <i class="fas fa-globe"></i>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">Comprehensive indicators</h3>
-      <p class="text-gray-700">Indicators span climate change hazards, adaptation interventions, and adaptation impacts in agriculture — reflecting commonly tracked aspects of adaptation projects and programs worldwide.</p>
-    </div>
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
-      <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4">
-        <i class="fas fa-chart-line"></i>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">Radically practical</h3>
-      <p class="text-gray-700">Identifies easy-to-operationalize methods and approaches that support robust and low-effort adaptation tracking — designed so that field practitioners can apply them without specialist data infrastructure.</p>
-    </div>
+    {% endfor %}
   </div>
+  {% endif %}
 
   <!-- Partner institutions -->
+  {% if page.partners %}
   <h2 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Partner institutions</h2>
-  <div class="grid md:grid-cols-2 gap-6 mb-8">
+  <div class="grid md:grid-cols-3 gap-6 mb-8">
+    {% for block in page.partners %}
+    {% if block.value.url %}
+    <a href="{{ block.value.url }}" target="_blank" rel="noopener noreferrer" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 flex gap-4 hover:shadow-md hover:border-brand-green transition-all">
+    {% else %}
     <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 flex gap-4">
+    {% endif %}
       <div class="w-16 h-16 rounded-lg bg-white border border-gray-100 flex items-center justify-center flex-shrink-0 p-1.5">
-        <img src="{% static 'images/IWMI_Logo.jpg' %}" alt="IWMI logo" class="max-w-full max-h-full object-contain">
+        {% if block.value.logo %}
+          {% image block.value.logo max-64x64 class="max-w-full max-h-full object-contain" %}
+        {% elif block.value.logo_url %}
+          <img src="{% static block.value.logo_url %}" alt="{{ block.value.name }} logo" class="max-w-full max-h-full object-contain">
+        {% endif %}
       </div>
       <div>
-        <h3 class="text-lg font-semibold text-gray-900 leading-snug">International Water Management Institute</h3>
-        <span class="inline-block bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded mt-1 mb-2">Data standards &amp; coordination</span>
-        <p class="text-gray-700">Providing international standards for meteorological observations and data exchange across climate monitoring networks.</p>
+        <h3 class="text-lg font-semibold text-gray-900 leading-snug">{{ block.value.name }}</h3>
+        {% if block.value.tag %}<span class="inline-block bg-gray-50 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded mt-1 mb-2">{{ block.value.tag }}</span>{% endif %}
+        {% if block.value.description %}<p class="text-gray-700">{{ block.value.description }}</p>{% endif %}
       </div>
-    </div>
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 flex gap-4">
-      <div class="w-16 h-16 rounded-lg bg-white border border-gray-100 flex items-center justify-center flex-shrink-0 p-1.5">
-        <img src="{% static 'images/ilri_logo.jpg' %}" alt="ILRI logo" class="max-w-full max-h-full object-contain">
-      </div>
-      <div>
-        <h3 class="text-lg font-semibold text-gray-900 leading-snug">International Livestock Research Institute</h3>
-        <span class="inline-block bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded mt-1 mb-2">Research &amp; data</span>
-        <p class="text-gray-700">Supporting climate research initiatives and providing comprehensive datasets for agricultural adaptation indicators.</p>
-      </div>
-    </div>
+    {% if block.value.url %}</a>{% else %}</div>{% endif %}
+    {% endfor %}
   </div>
+  {% endif %}
 
   <!-- The wiki team -->
+  {% if page.team %}
   <h2 class="text-2xl font-bold text-gray-900 mt-8 mb-4">The wiki team</h2>
   <div class="grid md:grid-cols-3 gap-6 mb-8">
+    {% for block in page.team %}
     <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 text-center">
-      <div class="w-14 h-14 rounded-full bg-blue-500 text-white text-lg font-bold flex items-center justify-center mx-auto mb-3">MR</div>
-      <h3 class="text-lg font-semibold text-gray-900">Dr. Maria Rodriguez</h3>
-      <span class="inline-block bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded my-2">Lead Editor</span>
-      <p class="text-gray-700">Climate scientist specialising in adaptation indicators and measurement frameworks for agricultural systems.</p>
+      <div class="w-14 h-14 rounded-full bg-{{ block.value.color }}-500 text-white text-lg font-bold flex items-center justify-center mx-auto mb-3">{{ block.value.initials }}</div>
+      <h3 class="text-lg font-semibold text-gray-900">{{ block.value.name }}</h3>
+      {% if block.value.role %}<span class="inline-block bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded my-2">{{ block.value.role }}</span>{% endif %}
+      {% if block.value.description %}<p class="text-gray-700">{{ block.value.description }}</p>{% endif %}
     </div>
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 text-center">
-      <div class="w-14 h-14 rounded-full bg-emerald-500 text-white text-lg font-bold flex items-center justify-center mx-auto mb-3">JC</div>
-      <h3 class="text-lg font-semibold text-gray-900">Dr. James Chen</h3>
-      <span class="inline-block bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded my-2">Technical Editor</span>
-      <p class="text-gray-700">Expert in climate data, remote sensing, and geospatial analysis for environmental monitoring.</p>
-    </div>
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 text-center">
-      <div class="w-14 h-14 rounded-full bg-amber-500 text-white text-lg font-bold flex items-center justify-center mx-auto mb-3">AO</div>
-      <h3 class="text-lg font-semibold text-gray-900">Dr. Amara Okafor</h3>
-      <span class="inline-block bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded my-2">Contributing Editor</span>
-      <p class="text-gray-700">Managing content quality and community contributions across the wiki's growing knowledge base.</p>
-    </div>
+    {% endfor %}
   </div>
+  {% endif %}
 
   <!-- Get in touch -->
-  <h2 class="text-2xl font-bold text-gray-900 mt-8 mb-4">Get in touch</h2>
+  {% if page.contact_cards %}
+  {% if page.contact_heading %}<h2 class="text-2xl font-bold text-gray-900 mt-8 mb-4">{{ page.contact_heading }}</h2>{% endif %}
   <div class="grid md:grid-cols-2 gap-6">
-    <div class="bg-emerald-50/60 border border-emerald-100 rounded-lg shadow-sm p-6">
+    {% for block in page.contact_cards %}
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6">
       <div class="w-10 h-10 rounded-lg bg-white text-brand-green flex items-center justify-center mb-4 shadow-sm">
-        <i class="far fa-envelope"></i>
+        <i class="fas {{ block.value.icon }}"></i>
       </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">General inquiries</h3>
-      <p class="text-gray-700 mb-4">Questions about the wiki, how to use it, or how to suggest additions or corrections to existing entries.</p>
-      <a href="/feedback" class="inline-block bg-white border border-gray-200 text-gray-700 text-sm font-semibold px-4 py-2 rounded-lg hover:border-brand-green hover:text-brand-green transition">Send a message</a>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ block.value.title }}</h3>
+      {% if block.value.description %}<p class="text-gray-700 mb-4">{{ block.value.description }}</p>{% endif %}
+      {% if block.value.button_label %}
+        {% if block.value.primary %}
+        <a href="{{ block.value.button_url|default:'#' }}" class="inline-block bg-brand-green text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-green-600 transition">{{ block.value.button_label }}</a>
+        {% else %}
+        <a href="{{ block.value.button_url|default:'#' }}" class="inline-block bg-white border border-gray-200 text-gray-700 text-sm font-semibold px-4 py-2 rounded-lg hover:border-brand-green hover:text-brand-green transition">{{ block.value.button_label }}</a>
+        {% endif %}
+      {% endif %}
     </div>
-    <div class="bg-emerald-50/60 border border-emerald-100 rounded-lg shadow-sm p-6">
-      <div class="w-10 h-10 rounded-lg bg-white text-brand-green flex items-center justify-center mb-4 shadow-sm">
-        <i class="fas fa-plus"></i>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">Become a contributor</h3>
-      <p class="text-gray-700 mb-4">Share your expertise by contributing new indicators, metrics, or SOPs. All contributions are reviewed by the editorial team.</p>
-      <a href="/become-editor" class="inline-block bg-brand-green text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-green-600 transition">Start contributing</a>
-    </div>
+    {% endfor %}
   </div>
+  {% endif %}
 
 </div>
 {% endblock %}

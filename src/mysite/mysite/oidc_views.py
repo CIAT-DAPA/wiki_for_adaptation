@@ -1,12 +1,42 @@
 import logging
+import traceback
 from django.conf import settings
 from django.contrib.auth import logout as django_logout
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from urllib.parse import urlencode
 
+from mozilla_django_oidc.views import OIDCAuthenticationCallbackView
+
 logger = logging.getLogger(__name__)
+
+
+class CustomOIDCAuthenticationCallbackView(OIDCAuthenticationCallbackView):
+    """OIDC callback that fails gracefully.
+
+    When Keycloak/OIDC login fails — whether the provider returns an error, the
+    token can't be verified, or any exception is raised — show the user a single,
+    friendly "we couldn't sign you in" page instead of a raw traceback / wall of
+    messages. The full technical detail is always written to the server log, and
+    is only surfaced in the page itself when DEBUG is on (never to end users in
+    production).
+    """
+
+    def get(self, request):
+        try:
+            return super().get(request)
+        except Exception:
+            logger.exception("OIDC authentication callback raised an exception")
+            return self._render_login_error(request, detail=traceback.format_exc())
+
+    def login_failure(self):
+        logger.warning("OIDC authentication failed (login_failure)")
+        return self._render_login_error(self.request, detail=None)
+
+    def _render_login_error(self, request, detail=None):
+        context = {"error_detail": detail if (detail and settings.DEBUG) else None}
+        return render(request, "oidc_error.html", context, status=400)
 
 
 def wagtail_login_redirect(request):
