@@ -30,35 +30,31 @@
   {% if page.purpose %}
   <li><a href="#purpose" class="text-gray-700 hover:text-brand-green">Purpose</a></li>
   {% endif %}
-  <li><a href="#properties" class="text-gray-700 hover:text-brand-green">Properties</a></li>
   {% if page.tracks_vulnerability or page.tracks_intervention_impacts or page.adaptation_tracking_function %}
   <li><a href="#tracking-function" class="text-gray-700 hover:text-brand-green">Adaptation Tracking Function</a></li>
   {% endif %}
-  {% if method_pages %}
-    <li>
-      <a href="#methods" class="text-gray-700 hover:text-brand-green font-medium">Methods ({{ method_count }})</a>
-      <ul class="ml-3 mt-1 space-y-1 border-l border-gray-100 pl-3">
-        {% for child in method_pages %}
-        <li><a href="#method-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">{{ child.title|truncatewords:4 }}</a></li>
-        {% endfor %}
-      </ul>
-    </li>
-  {% endif %}
   {% if sop_pages %}
-    <li class="pt-2 mt-2 border-t border-gray-200 text-xs uppercase text-gray-400">SOPs ({{ sop_count }})</li>
+    <li class="pt-2 mt-2 border-t border-gray-200 text-xs uppercase text-gray-400">Standard Operating Procedure</li>
     {% for child in sop_pages %}
       <li>
         <a href="#sop-{{ child.slug }}" class="text-gray-700 hover:text-brand-green font-medium">{{ child.title|truncatewords:5 }}</a>
         <ul class="ml-3 mt-1 space-y-1 border-l border-gray-100 pl-3">
           {% if child.definition %}<li><a href="#definition-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">Definition</a></li>{% endif %}
-          {% if child.options_enhancing_robustness or child.options_reducing_costs %}<li><a href="#method-options-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">Method options</a></li>{% endif %}
-          {% if child.activities_and_steps %}<li><a href="#measurement-steps-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">Procedure steps</a></li>{% endif %}
           {% if child.data_sources %}<li><a href="#data-sources-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">Data sources</a></li>{% endif %}
-          {% if child.available_tools_and_code %}<li><a href="#tools-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">Tools &amp; resources</a></li>{% endif %}
+          {% if child.technical_capacity %}<li><a href="#technical-capacity-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">Technical capacity</a></li>{% endif %}
+          {% if method_pages %}<li><a href="#method-options-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">Method options</a></li>{% endif %}
+          {% if child.activities_and_steps %}<li><a href="#measurement-steps-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">Activities and Steps</a></li>{% endif %}
+          {% if child.options_enhancing_robustness %}<li><a href="#robustness-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">Options for Enhancing Robustness</a></li>{% endif %}
+          {% if child.options_reducing_costs %}<li><a href="#costs-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">Options for Reducing Costs</a></li>{% endif %}
+          {% if child.available_tools_and_code %}<li><a href="#tools-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">Available Tools</a></li>{% endif %}
+          {% if child.visual_content %}<li><a href="#visual-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">Visual content</a></li>{% endif %}
+          {% if child.flagship_method_status %}<li><a href="#flagship-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">Flagship Method Status</a></li>{% endif %}
           {% if child.references %}<li><a href="#references-{{ child.slug }}" class="text-xs text-gray-500 hover:text-brand-green">References</a></li>{% endif %}
         </ul>
       </li>
     {% endfor %}
+  {% elif method_pages %}
+    <li><a href="#method-options-metric" class="text-gray-700 hover:text-brand-green">Method options</a></li>
   {% endif %}
   {% if related_metrics %}
   <li class="pt-2 mt-2 border-t border-gray-200 text-xs uppercase text-gray-400">Related Metrics</li>
@@ -77,48 +73,6 @@
         <span><i class="fas fa-calendar text-gray-400 mr-1"></i> {{ page.first_published_at|date:"m/d/Y" }}</span>
       </p>
     </header>
-
-    {# Compact properties grid — answers "is this metric right for me?" at a glance #}
-    {% with parent=page.get_parent.specific %}
-    <section id="properties" class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6 scroll-mt-20">
-      {% if sop_pages.0.units %}
-      <div class="bg-white border border-gray-200 rounded-lg p-4">
-        <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Unit</div>
-        <div class="text-sm font-semibold text-brand-green">{{ sop_pages.0.units }}</div>
-      </div>
-      {% endif %}
-      {% if parent.indicator_type %}
-      <div class="bg-white border border-gray-200 rounded-lg p-4">
-        <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Indicator type</div>
-        <div class="text-sm font-semibold text-gray-900">{{ parent.indicator_type }}</div>
-      </div>
-      {% endif %}
-      {% if method_count %}
-      <div class="bg-white border border-gray-200 rounded-lg p-4">
-        <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Methods available</div>
-        <div class="text-sm font-semibold text-brand-green">{{ method_count }} method{{ method_count|pluralize }}</div>
-      </div>
-      {% endif %}
-      {% if sop_pages.0.geographic_scale %}
-      <div class="bg-white border border-gray-200 rounded-lg p-4">
-        <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Geographic scale</div>
-        <div class="text-sm font-semibold text-gray-900">{{ sop_pages.0.geographic_scale }}</div>
-      </div>
-      {% endif %}
-      {% if parent.dimension %}
-      <div class="bg-white border border-gray-200 rounded-lg p-4">
-        <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Dimension</div>
-        <div class="text-sm font-semibold text-gray-900">{{ parent.dimension }}</div>
-      </div>
-      {% endif %}
-      {% if sop_count %}
-      <div class="bg-white border border-gray-200 rounded-lg p-4">
-        <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">SOPs</div>
-        <div class="text-sm font-semibold text-brand-green">{{ sop_count }} SOP{{ sop_count|pluralize }} available</div>
-      </div>
-      {% endif %}
-    </section>
-    {% endwith %}
 
     {% if page.description %}
     <section id="description" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
@@ -161,113 +115,12 @@
     </section>
     {% endif %}
 
-    {% if method_pages %}
-      <section id="methods" class="my-8 scroll-mt-20">
-        <h2 class="text-3xl font-bold text-gray-900 mb-6">Methods</h2>
-        <div class="space-y-6">
-          {% for child in method_pages %}
-            <div id="method-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 scroll-mt-20">
-              <div class="flex items-start justify-between gap-4 mb-4">
-                <div class="flex items-start gap-3">
-                  <span class="w-7 h-7 rounded-full bg-brand-green text-white text-sm font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{{ forloop.counter }}</span>
-                  <div>
-                    <h3 class="text-lg font-semibold text-gray-900">{{ child.title }}</h3>
-                    {% if child.description %}
-                    <p class="text-sm text-gray-500">{{ child.description|striptags|truncatewords:14 }}</p>
-                    {% endif %}
-                  </div>
-                </div>
-                {% if child.method_type or child.cost_level or child.scale %}
-                <div class="flex flex-wrap items-center justify-end gap-1.5 flex-shrink-0">
-                  {% if child.method_type %}
-                  <span class="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-full px-2.5 py-1 text-xs text-gray-700"><i class="fas fa-satellite-dish text-blue-400"></i> {{ child.method_type }}</span>
-                  {% endif %}
-                  {% if child.cost_level %}
-                  <span class="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-full px-2.5 py-1 text-xs text-gray-700"><i class="fas fa-coins text-amber-400"></i> {{ child.cost_level }}</span>
-                  {% endif %}
-                  {% if child.scale %}
-                  <span class="inline-flex items-center gap-1 bg-white border border-gray-200 rounded-full px-2.5 py-1 text-xs text-gray-700"><i class="fas fa-vector-square text-emerald-400"></i> {{ child.scale }}</span>
-                  {% endif %}
-                </div>
-                {% endif %}
-              </div>
-
-              {% if child.resolution %}
-              <div class="flex items-baseline gap-2 mb-4 pb-4 border-b border-gray-100">
-                <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Resolution</span>
-                <span class="text-sm text-gray-700">{{ child.resolution }}</span>
-              </div>
-              {% endif %}
-
-              <div class="grid md:grid-cols-2 gap-6">
-                {% if child.advantages %}
-                <div class="rounded-lg bg-emerald-50 border border-emerald-100 p-4">
-                  <h4 class="flex items-center gap-2 text-sm font-semibold text-emerald-800 mb-2"><i class="fas fa-circle-check"></i> Advantages</h4>
-                  <div class="prose prose-sm max-w-none text-gray-700">{{ child.advantages_html }}</div>
-                </div>
-                {% endif %}
-
-                {% if child.limitations %}
-                <div class="rounded-lg bg-amber-50 border border-amber-100 p-4">
-                  <h4 class="flex items-center gap-2 text-sm font-semibold text-amber-800 mb-2"><i class="fas fa-triangle-exclamation"></i> Limitations</h4>
-                  <div class="prose prose-sm max-w-none text-gray-700">{{ child.limitations_html }}</div>
-                </div>
-                {% endif %}
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      </section>
-    {% endif %}
-
     {% if sop_pages %}
       <section id="sops" class="my-8 scroll-mt-20">
-        <div class="space-y-8">
+        <div class="space-y-10">
           {% for child in sop_pages %}
             <article id="sop-{{ child.slug }}" class="scroll-mt-20">
-              <!-- SOP header -->
-              <header class="mb-5 pb-4 border-b border-gray-200">
-                <span class="inline-block bg-brand-orange text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded mb-1">SOP — Standard Operating Procedure</span>
-                <h3 class="text-3xl font-bold text-gray-900 mb-2">{{ child.title }}</h3>
-                <p class="text-gray-500 text-sm flex items-center gap-4 mb-3">
-                  <span><i class="fas fa-user text-gray-400 mr-1"></i> {{ child.entry_author|default:child.owner.get_full_name|default:child.owner.username|default:"Unknown" }}</span>
-                  <span><i class="fas fa-calendar text-gray-400 mr-1"></i> {{ child.first_published_at|date:"M d, Y" }}</span>
-                </p>
-
-                <!-- Chips row -->
-                <div class="flex flex-wrap items-center gap-2">
-                  {% if child.frequency %}
-                  <span class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-3 py-1 text-xs text-gray-700">
-                    <i class="far fa-clock text-gray-400"></i> {{ child.frequency }}
-                  </span>
-                  {% endif %}
-                  {% if child.estimated_time %}
-                  <span class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-3 py-1 text-xs text-gray-700">
-                    <i class="fas fa-hourglass-half text-purple-400"></i> {{ child.estimated_time }}
-                  </span>
-                  {% endif %}
-                  {% if child.measurement_step_count %}
-                  <span class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-3 py-1 text-xs text-gray-700">
-                    <i class="fas fa-list-ol text-emerald-500"></i> {{ child.measurement_step_count }} step{{ child.measurement_step_count|pluralize }}
-                  </span>
-                  {% endif %}
-                  {% if child.method_type %}
-                  <span class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-3 py-1 text-xs text-gray-700">
-                    <i class="fas fa-flask text-blue-400"></i> {{ child.method_type }}
-                  </span>
-                  {% endif %}
-                  {% if child.geographic_scale %}
-                  <span class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-3 py-1 text-xs text-gray-700">
-                    <i class="fas fa-globe-africa text-gray-400"></i> {{ child.geographic_scale }}
-                  </span>
-                  {% endif %}
-                  {% if child.units %}
-                  <span class="inline-flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-3 py-1 text-xs text-gray-700">
-                    <i class="fas fa-ruler text-gray-400"></i> {{ child.units }}
-                  </span>
-                  {% endif %}
-                </div>
-              </header>
+              <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">Standard Operating Procedure - {{ child.title }}</h2>
 
               {% if child.definition %}
               <section id="definition-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
@@ -276,57 +129,77 @@
               </section>
               {% endif %}
 
-              {% if child.options_enhancing_robustness or child.options_reducing_costs %}
-              <section id="method-options-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
-                <h4 class="text-lg font-semibold text-gray-900 mb-3">Method options</h4>
-                <div class="grid md:grid-cols-2 gap-4">
-                  {% if child.options_enhancing_robustness %}
-                  <div id="robustness-{{ child.slug }}" class="rounded-lg border border-emerald-100 bg-emerald-50 p-4 scroll-mt-20">
-                    <h5 class="text-sm font-semibold text-emerald-800 mb-2">Options for Enhancing Robustness</h5>
-                    <div class="prose prose-sm max-w-none">{{ child.options_enhancing_robustness_html }}</div>
-                  </div>
-                  {% endif %}
-                  {% if child.options_reducing_costs %}
-                  <div id="costs-{{ child.slug }}" class="rounded-lg border border-amber-100 bg-amber-50 p-4 scroll-mt-20">
-                    <h5 class="text-sm font-semibold text-amber-800 mb-2">Options for Reducing Costs</h5>
-                    <div class="prose prose-sm max-w-none">{{ child.options_reducing_costs_html }}</div>
-                  </div>
-                  {% endif %}
-                </div>
+              {% if child.data_sources %}
+              <section id="data-sources-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
+                <h4 class="text-lg font-semibold text-gray-900 mb-3">Data sources</h4>
+                <div class="prose prose-sm max-w-none">{{ child.data_sources_html }}</div>
               </section>
               {% endif %}
 
-              {% if child.activities_and_steps %}
-              <section id="measurement-steps-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
-                <h4 class="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-4">
-                  <i class="fas fa-list-check text-emerald-600"></i> Procedure steps
-                </h4>
-                <div class="sop-steps prose prose-sm max-w-none">{{ child.activities_and_steps_html }}</div>
+              {% if child.units or child.frequency or child.geographic_scale %}
+              <section class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+                {% if child.units %}
+                <div class="bg-white border border-gray-200 rounded-lg p-4">
+                  <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Units</div>
+                  <div class="text-sm text-gray-800">{{ child.units }}</div>
+                </div>
+                {% endif %}
+                {% if child.frequency %}
+                <div class="bg-white border border-gray-200 rounded-lg p-4">
+                  <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Frequency</div>
+                  <div class="text-sm text-gray-800">{{ child.frequency }}</div>
+                </div>
+                {% endif %}
+                {% if child.geographic_scale %}
+                <div class="bg-white border border-gray-200 rounded-lg p-4">
+                  <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Geographic scale</div>
+                  <div class="text-sm text-gray-800">{{ child.geographic_scale }}</div>
+                </div>
+                {% endif %}
               </section>
               {% endif %}
 
               {% if child.technical_capacity %}
               <section id="technical-capacity-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
-                <h4 class="text-lg font-semibold text-gray-900 mb-3">Technical capacity to measure metric</h4>
+                <h4 class="text-lg font-semibold text-gray-900 mb-3">Technical capacity considerations</h4>
                 <div class="prose prose-sm max-w-none">{{ child.technical_capacity|richtext }}</div>
               </section>
               {% endif %}
 
-              {% if child.data_sources %}
-              <section id="data-sources-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
-                <h4 class="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
-                  <i class="fas fa-database text-blue-500"></i> Data sources
-                </h4>
-                <div class="prose prose-sm max-w-none">{{ child.data_sources_html }}</div>
+              {% include "catalog/_method_options.html" with sop_slug=child.slug %}
+
+              {% if child.activities_and_steps %}
+              <section id="measurement-steps-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
+                <h4 class="text-lg font-semibold text-gray-900 mb-3">Activities and Steps</h4>
+                <div class="sop-steps prose prose-sm max-w-none">{{ child.activities_and_steps_html }}</div>
+              </section>
+              {% endif %}
+
+              {% if child.options_enhancing_robustness %}
+              <section id="robustness-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
+                <h4 class="text-lg font-semibold text-gray-900 mb-3">Options for Enhancing Robustness</h4>
+                <div class="prose prose-sm max-w-none">{{ child.options_enhancing_robustness_html }}</div>
+              </section>
+              {% endif %}
+
+              {% if child.options_reducing_costs %}
+              <section id="costs-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
+                <h4 class="text-lg font-semibold text-gray-900 mb-3">Options for Reducing Costs</h4>
+                <div class="prose prose-sm max-w-none">{{ child.options_reducing_costs_html }}</div>
               </section>
               {% endif %}
 
               {% if child.available_tools_and_code %}
               <section id="tools-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
-                <h4 class="flex items-center gap-2 text-lg font-semibold text-gray-900 mb-3">
-                  <i class="fas fa-toolbox text-amber-500"></i> Tools &amp; resources
-                </h4>
+                <h4 class="text-lg font-semibold text-gray-900 mb-3">Available Tools</h4>
                 <div class="sop-tools prose prose-sm max-w-none">{{ child.available_tools_and_code_html }}</div>
+              </section>
+              {% endif %}
+
+              {% if child.visual_content %}
+              <section id="visual-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
+                <h4 class="text-lg font-semibold text-gray-900 mb-3">Visual content</h4>
+                <div class="prose prose-sm max-w-none">{{ child.visual_content|richtext }}</div>
               </section>
               {% endif %}
 
@@ -347,67 +220,9 @@
           {% endfor %}
         </div>
       </section>
+    {% elif method_pages %}
+      {# No SOP yet — still surface the method options for this metric #}
+      <section class="my-8">{% include "catalog/_method_options.html" with sop_slug="metric" %}</section>
     {% endif %}
 
-    <style>
-      /* Numbered "Procedure steps" — render ordered list as styled cards with green numbers */
-      .sop-steps ol { list-style: none; counter-reset: sop-step; padding-left: 0; margin: 0; }
-      .sop-steps ol > li {
-        counter-increment: sop-step;
-        position: relative;
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-        padding: 1rem 1rem 1rem 3.25rem;
-        margin-bottom: 0.75rem;
-      }
-      .sop-steps ol > li::before {
-        content: counter(sop-step);
-        position: absolute;
-        left: 0.85rem;
-        top: 1rem;
-        width: 1.6rem;
-        height: 1.6rem;
-        background: #059669;
-        color: #fff;
-        font-size: 0.8rem;
-        font-weight: 700;
-        border-radius: 9999px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      /* Tools & resources — render bullet list as two-column chips */
-      .sop-tools ul {
-        list-style: none;
-        padding-left: 0;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.5rem;
-        margin: 0;
-      }
-      .sop-tools ul > li {
-        background: #f9fafb;
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-        padding: 0.6rem 0.85rem;
-        margin: 0;
-        position: relative;
-        padding-left: 1.75rem;
-        font-size: 0.85rem;
-      }
-      .sop-tools ul > li::before {
-        content: "";
-        position: absolute;
-        left: 0.85rem;
-        top: 1.05rem;
-        width: 0.45rem;
-        height: 0.45rem;
-        background: #059669;
-        border-radius: 9999px;
-      }
-      @media (max-width: 640px) {
-        .sop-tools ul { grid-template-columns: 1fr; }
-      }
-    </style>
 {% endblock %}

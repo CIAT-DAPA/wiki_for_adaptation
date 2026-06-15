@@ -81,10 +81,63 @@
                etc. render their lists correctly. */
             .prose ul { list-style: disc; padding-left: 1.5rem; margin: 0.5rem 0; }
             .prose ol { list-style: decimal; padding-left: 1.5rem; margin: 0.5rem 0; }
+            /* Nested lists keep distinct markers at each level (multi-level
+               bullets / numbering, e.g. Activities and Steps). */
             .prose ul ul { list-style: circle; }
+            .prose ul ul ul { list-style: square; }
+            .prose ol ol { list-style: lower-alpha; }
+            .prose ol ol ol { list-style: lower-roman; }
+            .prose li > ul, .prose li > ol { margin: 0.25rem 0 0.25rem 0; }
             .prose li { margin: 0.25rem 0; }
             .prose p { margin: 0.5rem 0; }
             .prose a { color: #10b981; text-decoration: underline; }
+
+            /* "Activities and Steps": top-level steps render as numbered cards
+               (green number badge). Scoped to the top-level <ol> so nested
+               bullets/numbering inside a step keep their normal markers. */
+            .sop-steps > ol { list-style: none; counter-reset: sop-step; padding-left: 0; margin: 0; }
+            .sop-steps > ol > li {
+                counter-increment: sop-step;
+                position: relative;
+                background: #f9fafb;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.5rem;
+                padding: 1rem 1rem 1rem 3.25rem;
+                margin: 0 0 0.75rem 0;
+            }
+            .sop-steps > ol > li::before {
+                content: counter(sop-step);
+                position: absolute;
+                left: 0.85rem; top: 1rem;
+                width: 1.6rem; height: 1.6rem;
+                background: #059669; color: #fff;
+                font-size: 0.8rem; font-weight: 700;
+                border-radius: 9999px;
+                display: flex; align-items: center; justify-content: center;
+            }
+
+            /* "Available Tools": top-level items render as two-column chips. */
+            .sop-tools > ul {
+                list-style: none; padding-left: 0; margin: 0;
+                display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem;
+            }
+            .sop-tools > ul > li {
+                position: relative;
+                background: #f9fafb;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.5rem;
+                padding: 0.6rem 0.85rem 0.6rem 1.75rem;
+                margin: 0;
+                font-size: 0.85rem;
+            }
+            .sop-tools > ul > li::before {
+                content: "";
+                position: absolute;
+                left: 0.85rem; top: 1.05rem;
+                width: 0.45rem; height: 0.45rem;
+                background: #059669; border-radius: 9999px;
+            }
+            @media (max-width: 640px) { .sop-tools > ul { grid-template-columns: 1fr; } }
         </style>
 
         {% block extra_css %}
@@ -124,7 +177,7 @@
                                 <button class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1">
                                     <i class="fa-solid fa-chart-bar text-xs"></i> Indicators <i class="fa fa-chevron-down text-xs ml-1"></i>
                                 </button>
-                                <div class="absolute left-0 top-full pt-2 w-64">
+                                <div class="absolute left-0 top-full pt-2 pointer-events-none group-hover:pointer-events-auto w-64">
                                     <div class="bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                                         <a href="/search/?category=indicator" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Search Indicators</a>
                                         <a href="/tracking-framework#indicator-framework" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">Indicator Framework</a>
@@ -137,7 +190,7 @@
                                 <button class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1">
                                     <i class="fa-regular fa-circle-question text-xs"></i> Help <i class="fa fa-chevron-down text-xs ml-1"></i>
                                 </button>
-                                <div class="absolute left-0 top-full pt-2 w-64">
+                                <div class="absolute left-0 top-full pt-2 pointer-events-none group-hover:pointer-events-auto w-64">
                                     <div class="bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                                         <a href="/wiki-instructions" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">How to navigate this wiki</a>
                                         <a href="/faq" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">FAQ</a>
@@ -150,7 +203,7 @@
                                 <button class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1">
                                     <i class="fa-solid fa-users text-xs"></i> Collaborate <i class="fa fa-chevron-down text-xs ml-1"></i>
                                 </button>
-                                <div class="absolute left-0 top-full pt-2 w-64">
+                                <div class="absolute left-0 top-full pt-2 pointer-events-none group-hover:pointer-events-auto w-64">
                                     <div class="bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                                         <a href="/become-editor" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Become an editor</a>
                                         <a href="/feedback" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">Feedback/Corrections</a>
@@ -167,7 +220,7 @@
                                     <span id="lang-current" class="notranslate" translate="no">EN</span>
                                     <i class="fa fa-chevron-down text-xs ml-1"></i>
                                 </button>
-                                <div class="absolute right-0 top-full pt-2 w-40">
+                                <div class="absolute right-0 top-full pt-2 pointer-events-none group-hover:pointer-events-auto w-40">
                                     <div class="bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                                         <a href="#" onclick="setSiteLanguage('en'); return false;" class="notranslate flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100" translate="no">🇬🇧 English</a>
                                         <a href="#" onclick="setSiteLanguage('fr'); return false;" class="notranslate flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-gray-50" translate="no">🇫🇷 Français</a>
@@ -183,7 +236,7 @@
                                     <span class="hidden lg:inline">{{ user.username }}</span>
                                     <i class="fa fa-chevron-down text-xs ml-1"></i>
                                 </button>
-                                <div class="absolute right-0 top-full pt-2 w-48">
+                                <div class="absolute right-0 top-full pt-2 pointer-events-none group-hover:pointer-events-auto w-48">
                                     <div class="bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                                         <a href="/admin/" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">
                                             <i class="fa-solid fa-gauge text-xs mr-2"></i>Admin Panel
