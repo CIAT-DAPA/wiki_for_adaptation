@@ -16,18 +16,42 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
     """
 
     def filter_users_by_claims(self, claims):
+        """Find the existing user for these claims.
+
+        Primary match is by email, but Keycloak may send a different/empty email
+        than what we stored (e.g. email changed, unverified, or no email mapper).
+        In that case we fall back to matching by ``preferred_username`` so we
+        reuse the existing account instead of trying to create a duplicate
+        (which would collide on the unique username constraint).
+        """
         email = claims.get("email")
-        if not email:
-            return self.UserModel.objects.none()
-        return self.UserModel.objects.filter(email__iexact=email)
+        username = claims.get("preferred_username")
+
+        if email:
+            users = self.UserModel.objects.filter(email__iexact=email)
+            if users.exists():
+                return users
+
+        if username:
+            return self.UserModel.objects.filter(username__iexact=username)
+
+        return self.UserModel.objects.none()
 
     def create_user(self, claims):
         """Create user from Keycloak claims. No admin access by default."""
         email = claims.get("email")
         username = claims.get("preferred_username", email)
-        
+
+        # Safety net: if a user with this username already exists (e.g. the email
+        # changed so the lookup above missed it), reuse and update it instead of
+        # raising a duplicate-key IntegrityError.
+        existing = self.UserModel.objects.filter(username__iexact=username).first()
+        if existing:
+            logger.info(f"OIDC user '{username}' already exists; updating instead of creating")
+            return self.update_user(existing, claims)
+
         logger.info(f"Creating OIDC user: {username} / {email}")
-        
+
         user = self.UserModel.objects.create_user(username=username, email=email)
         
         # Map user fields from Keycloak claims
