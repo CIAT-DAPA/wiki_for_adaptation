@@ -53,9 +53,9 @@ def wagtail_login_redirect(request):
             logger.info(f"User {request.user.username} authenticated but has no staff access")
             messages.warning(
                 request,
-                f"Welcome {request.user.username}! Your account has been created successfully. "
-                "To access the admin panel, please contact an administrator who will assign you to the appropriate group "
-                "(Administrators, Reviewers, or Content Developers) in the Django Admin."
+                f"Welcome {request.user.username}! You're signed in, but your account "
+                "doesn't have admin access yet. Please contact an administrator to be "
+                "added to a group (Administrators, Reviewers, or Content Developers)."
             )
             return redirect('/')
     
