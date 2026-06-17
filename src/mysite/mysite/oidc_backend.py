@@ -88,22 +88,21 @@ class KeycloakOIDCBackend(OIDCAuthenticationBackend):
         # Ensure user remains active
         user.is_active = True
         
-        # Check Django groups (managed in Wagtail admin) to determine access
+        # Grant access based on Django groups (managed in Wagtail admin).
+        # IMPORTANT: only ELEVATE here, never auto-downgrade. Earlier this method
+        # reset is_staff/is_superuser to False on every login when the user was
+        # not in a recognised group, which silently wiped access that an admin had
+        # granted manually (via the staff/superuser checkboxes). To revoke access,
+        # an admin removes the group / unchecks the flag in the admin and it now
+        # persists.
         user_groups = set(user.groups.values_list('name', flat=True))
-        
-        # Users in 'Administrators' group get superuser access
+
         if 'Administrators' in user_groups:
             user.is_staff = True
             user.is_superuser = True
-        # Users in any other admin group get staff access only
         elif user_groups & {'Reviewers', 'Content Developers'}:
             user.is_staff = True
-            user.is_superuser = False
-        # Users not in any group have no access
-        else:
-            user.is_staff = False
-            user.is_superuser = False
-        
+
         user.save()
         logger.debug(f"User updated: {user.username} (staff={user.is_staff}, superuser={user.is_superuser})")
         logger.debug(f"User groups: {list(user_groups)}")
