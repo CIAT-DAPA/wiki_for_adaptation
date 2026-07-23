@@ -24,6 +24,7 @@ urlpatterns = [
     # Forms with CAPTCHA - keep as Django views
     path("become-editor/", become_editor_view, name="become_editor"),
     path("feedback/", feedback_view, name="feedback"),
+    path("chat/", include("chatbot.urls")),
     path("oidc/", include("mozilla_django_oidc.urls")),
     path("admin/login/", wagtail_login_redirect, name="wagtailadmin_login"),  # Override Wagtail login with OIDC
     path("admin/logout/", oidc_logout_view, name="wagtailadmin_logout"),  # Override Wagtail logout

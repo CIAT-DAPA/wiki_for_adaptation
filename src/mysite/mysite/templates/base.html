@@ -364,5 +364,8 @@
                 {% block extra_js %}
                 {# Override this in templates to add extra javascript #}
                 {% endblock %}
+
+                {# AI chatbot widget (RAG over wiki content) #}
+                {% include "chatbot/widget.html" %}
         </body>
 </html>
