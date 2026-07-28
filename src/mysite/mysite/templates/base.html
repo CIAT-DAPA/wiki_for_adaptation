@@ -94,8 +94,16 @@
 
             /* "Activities and Steps": top-level steps render as numbered cards
                (green number badge). Scoped to the top-level <ol> so nested
-               bullets/numbering inside a step keep their normal markers. */
-            .sop-steps > ol { list-style: none; counter-reset: sop-step; padding-left: 0; margin: 0; }
+               bullets/numbering inside a step keep their normal markers.
+               The counter is reset once on the container (not per <ol>) so that
+               numbering stays continuous even when Wagtail splits the list into
+               several <ol> blocks around interspersed bullets — otherwise every
+               block restarts at 1. See user feedback item #3. */
+            .sop-steps { counter-reset: sop-step; }
+            .sop-steps > ol { list-style: none; padding-left: 0; margin: 0; }
+            /* Bullets interspersed between steps are indented to line up under
+               the preceding step's text, so they read as part of that step. */
+            .sop-steps > ul { list-style: disc; padding-left: 1.25rem; margin: -0.25rem 0 0.75rem 3.25rem; }
             .sop-steps > ol > li {
                 counter-increment: sop-step;
                 position: relative;
@@ -206,14 +214,14 @@
                                 <div class="absolute left-0 top-full pt-2 pointer-events-none group-hover:pointer-events-auto w-64">
                                     <div class="bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                                         <a href="/become-editor" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Become an editor</a>
-                                        <a href="/feedback" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">Feedback/Corrections</a>
+                                        <a href="/feedback" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">Feedback</a>
                                     </div>
                                 </div>
                             </div>
                             
                             <a href="/about" class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1"><i class="fa-solid fa-circle-exclamation text-xs"></i> About</a>
 
-                            <!-- Language Selector (EN / FR) -->
+                            <!-- Language Selector (EN / FR / ES) -->
                             <div class="relative group">
                                 <button class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1" aria-label="Select language">
                                     <i class="fa-solid fa-globe text-xs"></i>
@@ -223,7 +231,8 @@
                                 <div class="absolute right-0 top-full pt-2 pointer-events-none group-hover:pointer-events-auto w-40">
                                     <div class="bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
                                         <a href="#" onclick="setSiteLanguage('en'); return false;" class="notranslate flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100" translate="no">🇬🇧 English</a>
-                                        <a href="#" onclick="setSiteLanguage('fr'); return false;" class="notranslate flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-gray-50" translate="no">🇫🇷 Français</a>
+                                        <a href="#" onclick="setSiteLanguage('fr'); return false;" class="notranslate flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100" translate="no">🇫🇷 Français</a>
+                                        <a href="#" onclick="setSiteLanguage('es'); return false;" class="notranslate flex items-center gap-2 px-4 py-3 text-gray-700 hover:bg-gray-50" translate="no">🇪🇸 Español</a>
                                     </div>
                                 </div>
                             </div>
@@ -319,7 +328,7 @@
                     function googleTranslateElementInit() {
                         new google.translate.TranslateElement({
                             pageLanguage: 'en',
-                            includedLanguages: 'en,fr',
+                            includedLanguages: 'en,fr,es',
                             autoDisplay: false
                         }, 'google_translate_element');
                     }
@@ -364,5 +373,52 @@
                 {% block extra_js %}
                 {# Override this in templates to add extra javascript #}
                 {% endblock %}
+
+                {# Open external links in a new tab (user feedback). Internal
+                   links keep navigating in the same tab. Runs on load and again
+                   whenever new content is injected (e.g. dynamic widgets). #}
+                <script>
+                    (function () {
+                        function markExternalLinks(root) {
+                            var links = (root || document).querySelectorAll('a[href]');
+                            for (var i = 0; i < links.length; i++) {
+                                var a = links[i];
+                                if (a.target === '_blank') continue;
+                                var href = a.getAttribute('href') || '';
+                                // Skip anchors, mailto:, tel:, javascript:, etc.
+                                if (!/^https?:\/\//i.test(href) && href.indexOf('//') !== 0) continue;
+                                if (a.hostname && a.hostname !== window.location.hostname) {
+                                    a.target = '_blank';
+                                    var rel = (a.getAttribute('rel') || '').split(/\s+/);
+                                    if (rel.indexOf('noopener') === -1) rel.push('noopener');
+                                    if (rel.indexOf('noreferrer') === -1) rel.push('noreferrer');
+                                    a.setAttribute('rel', rel.join(' ').trim());
+                                }
+                            }
+                        }
+                        document.addEventListener('DOMContentLoaded', function () {
+                            markExternalLinks(document);
+                            // Re-scan only newly added subtrees (Google Translate
+                            // mutates the DOM constantly, so avoid full re-scans).
+                            if (window.MutationObserver) {
+                                var obs = new MutationObserver(function (mutations) {
+                                    for (var i = 0; i < mutations.length; i++) {
+                                        var added = mutations[i].addedNodes;
+                                        for (var j = 0; j < added.length; j++) {
+                                            var node = added[j];
+                                            if (node.nodeType !== 1) continue;
+                                            if (node.tagName === 'A' && node.getAttribute('href')) {
+                                                markExternalLinks({ querySelectorAll: function () { return [node]; } });
+                                            } else if (node.querySelectorAll) {
+                                                markExternalLinks(node);
+                                            }
+                                        }
+                                    }
+                                });
+                                obs.observe(document.body, { childList: true, subtree: true });
+                            }
+                        });
+                    })();
+                </script>
         </body>
 </html>

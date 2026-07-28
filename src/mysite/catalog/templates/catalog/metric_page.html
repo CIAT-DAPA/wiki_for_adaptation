@@ -20,7 +20,7 @@
     <span class="inline-block bg-brand-green text-white text-[10px] font-bold uppercase px-2 py-0.5 rounded mb-1">Metric</span>
     <div class="block text-sm font-semibold text-gray-900 hover:text-brand-green leading-snug">{{ page.title }}</div>
     {% if sop_pages.0.units %}
-    <div class="text-xs text-gray-500 mt-0.5">{{ sop_pages.0.units }}</div>
+    <div class="text-xs text-gray-500 mt-0.5">{{ sop_pages.0.units|striptags }}</div>
     {% endif %}
   </div>
 {% endblock %}
@@ -140,19 +140,19 @@
               <section class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                 {% if child.units %}
                 <div class="bg-white border border-gray-200 rounded-lg p-4">
-                  <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Units</div>
-                  <div class="text-sm text-gray-800">{{ child.units }}</div>
+                  <div class="text-base font-semibold text-gray-900 mb-1">Units</div>
+                  <div class="prose prose-sm max-w-none text-sm text-gray-800">{{ child.units_html }}</div>
                 </div>
                 {% endif %}
                 {% if child.frequency %}
                 <div class="bg-white border border-gray-200 rounded-lg p-4">
-                  <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Frequency</div>
+                  <div class="text-base font-semibold text-gray-900 mb-1">Frequency</div>
                   <div class="text-sm text-gray-800">{{ child.frequency }}</div>
                 </div>
                 {% endif %}
                 {% if child.geographic_scale %}
                 <div class="bg-white border border-gray-200 rounded-lg p-4">
-                  <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Geographic scale</div>
+                  <div class="text-base font-semibold text-gray-900 mb-1">Geographic scale</div>
                   <div class="text-sm text-gray-800">{{ child.geographic_scale }}</div>
                 </div>
                 {% endif %}

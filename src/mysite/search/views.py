@@ -41,14 +41,38 @@ def search(request):
     indicator_qs = IndicatorPage.objects.live()
     metric_qs = MetricPage.objects.live()
 
-    # Free-text search applies across both columns.
+    # Free-text search applies across both columns. Content lives across
+    # Indicators, Metrics and SOPs, but this page only has an Indicator and a
+    # Metric column. A hit inside a SOP is therefore mapped up to its parent
+    # Metric so the match still surfaces; previously such hits were dropped,
+    # which made a search whose term only appears in a SOP return no results
+    # (worsened once filters were applied). See user feedback item #1.
     if search_query:
-        search_pks = {
-            r.pk for r in
-            Page.objects.live().filter(content_type__in=searchable_content_types).search(search_query)
-        }
-        indicator_qs = indicator_qs.filter(pk__in=search_pks)
-        metric_qs = metric_qs.filter(pk__in=search_pks)
+        results = (
+            Page.objects.live()
+            .filter(content_type__in=searchable_content_types)
+            .search(search_query)
+        )
+        matched_indicator_pks = set()
+        matched_metric_pks = set()
+        matched_sop_pks = set()
+        for result in results:
+            if result.content_type_id == indicator_ct.id:
+                matched_indicator_pks.add(result.pk)
+            elif result.content_type_id == metric_ct.id:
+                matched_metric_pks.add(result.pk)
+            elif result.content_type_id == sop_ct.id:
+                matched_sop_pks.add(result.pk)
+
+        # SOPs are children of Metrics: surface the parent Metric of each hit.
+        if matched_sop_pks:
+            for sop in SOPPage.objects.live().filter(pk__in=matched_sop_pks):
+                parent = sop.get_parent()
+                if parent:
+                    matched_metric_pks.add(parent.pk)
+
+        indicator_qs = indicator_qs.filter(pk__in=matched_indicator_pks)
+        metric_qs = metric_qs.filter(pk__in=matched_metric_pks)
 
     # Dimension / Subdimension are Indicator attributes. They filter Indicators
     # directly, and Metrics via their parent Indicator so both columns stay in sync.

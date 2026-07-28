@@ -246,7 +246,11 @@ class SOPPage(BaseWikiPage):
     # SOP specific fields (new structure)
     definition = RichTextField(blank=True)
     data_sources = RichTextField(blank=True)
-    units = models.CharField(max_length=100, blank=True)
+    units = RichTextField(
+        features=["bold", "italic", "ol", "ul", "link"],
+        blank=True,
+        help_text="Supports bullet lists when several units apply.",
+    )
     frequency = models.CharField(max_length=100, blank=True)
     geographic_scale = models.CharField(max_length=150, blank=True)
     technical_capacity = RichTextField(blank=True)
@@ -266,6 +270,11 @@ class SOPPage(BaseWikiPage):
     flagship_method_status = RichTextField(blank=True)
 
     entry_author = models.CharField(max_length=255, blank=True)
+    keywords = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text="Comma-separated keywords to improve search results for this SOP.",
+    )
 
     content_panels = BaseWikiPage.content_panels + [
         FieldPanel("definition"),
@@ -285,7 +294,14 @@ class SOPPage(BaseWikiPage):
     ]
 
     promote_panels = Page.promote_panels + [
-        MultiFieldPanel([FieldPanel("entry_author")], heading="Metadata"),
+        MultiFieldPanel(
+            [FieldPanel("entry_author"), FieldPanel("keywords")], heading="Metadata"
+        ),
+    ]
+
+    search_fields = BaseWikiPage.search_fields + [
+        index.SearchField("keywords"),
+        index.AutocompleteField("keywords"),
     ]
 
     template = "catalog/sop_page.html"
@@ -318,6 +334,11 @@ class SOPPage(BaseWikiPage):
     def data_sources_html(self):
         from .richtext_utils import render_list
         return render_list(self.data_sources, "ul")
+
+    @property
+    def units_html(self):
+        from .richtext_utils import render_list
+        return render_list(self.units, "ul")
 
     @property
     def available_tools_and_code_html(self):
