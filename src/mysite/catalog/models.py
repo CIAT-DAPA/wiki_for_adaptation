@@ -43,6 +43,10 @@ class IndicatorPage(BaseWikiPage):
     dimension = models.CharField(max_length=150, blank=True)
     indicator_type = models.CharField(max_length=150, blank=True)
     entry_author = models.CharField(max_length=255, blank=True)
+    external_id = models.CharField(
+        max_length=100, blank=True, db_index=True,
+        help_text="Stable ID from the bulk-import source (e.g. IND001). Used to match on re-import.",
+    )
 
     content_panels = BaseWikiPage.content_panels + [
         FieldPanel("description"),
@@ -51,21 +55,16 @@ class IndicatorPage(BaseWikiPage):
     ]
 
     promote_panels = Page.promote_panels + [
-        MultiFieldPanel([FieldPanel("entry_author")], heading="Metadata"),
+        MultiFieldPanel(
+            [FieldPanel("entry_author"), FieldPanel("external_id")], heading="Metadata"
+        ),
     ]
 
     search_fields = BaseWikiPage.search_fields + [
         index.SearchField("description"),
     ]
 
-    def clean(self):
-        super().clean()
-        # Limit to max 3 child operational indicators per requirement RF03
-        if self.pk:
-            existing = self.get_children().live().count()
-            # When creating via admin, children aren't created yet; enforce in child clean too
-            if existing > 3:
-                raise ValidationError({"title": _("An Indicator can only have up to 3 Operational Indicators.")})
+    # An Indicator may have any number of Metrics (no upper limit).
 
     class Meta:
         verbose_name = "Indicator"
@@ -147,17 +146,7 @@ class MetricPage(BaseWikiPage):
         )
         return context
 
-    def clean(self):
-        super().clean()
-        # Ensure parent exists and enforce max children on parent
-        if self.get_parent() and isinstance(self.get_parent().specific, IndicatorPage):
-            parent = self.get_parent().specific
-            # If creating new (no pk) include pending addition; else count children excluding self
-            count = parent.get_children().type(MetricPage).count()
-            if not self.pk:
-                count += 1
-            if count > 3:
-                raise ValidationError({"title": _("Each Indicator can only have up to 3 Metrics.")})
+    # An Indicator may host any number of Metrics (no upper limit).
 
     class Meta:
         verbose_name = "Metric"
@@ -214,14 +203,14 @@ class MethodPage(BaseWikiPage):
 
     def clean(self):
         super().clean()
-        # Enforce a maximum of 4 Methods per metric.
+        # Enforce a maximum of 5 Methods per metric.
         if self.get_parent() and isinstance(self.get_parent().specific, MetricPage):
             parent = self.get_parent().specific
             count = parent.get_children().type(MethodPage).exclude(pk=self.pk).count()
             if not self.pk:
                 count += 1
-            if count > 4:
-                raise ValidationError({"title": _("Each Metric can only have up to 4 Methods.")})
+            if count > 5:
+                raise ValidationError({"title": _("Each Metric can only have up to 5 Methods.")})
 
     def serve(self, request):
         """
@@ -269,11 +258,21 @@ class SOPPage(BaseWikiPage):
     visual_content = RichTextField(blank=True)
     flagship_method_status = RichTextField(blank=True)
 
+    example_applications = RichTextField(blank=True)
+    unfccc_alignment = RichTextField(
+        blank=True,
+        help_text="Alignment with the UNFCCC Belém Adaptation Indicators.",
+    )
+
     entry_author = models.CharField(max_length=255, blank=True)
     keywords = models.CharField(
         max_length=500,
         blank=True,
         help_text="Comma-separated keywords to improve search results for this SOP.",
+    )
+    external_id = models.CharField(
+        max_length=100, blank=True, db_index=True,
+        help_text="Stable ID from the bulk-import source (e.g. SOP001). Used to match on re-import.",
     )
 
     content_panels = BaseWikiPage.content_panels + [
@@ -291,11 +290,14 @@ class SOPPage(BaseWikiPage):
         FieldPanel("references"),
         FieldPanel("visual_content"),
         FieldPanel("flagship_method_status"),
+        FieldPanel("example_applications"),
+        FieldPanel("unfccc_alignment"),
     ]
 
     promote_panels = Page.promote_panels + [
         MultiFieldPanel(
-            [FieldPanel("entry_author"), FieldPanel("keywords")], heading="Metadata"
+            [FieldPanel("entry_author"), FieldPanel("keywords"), FieldPanel("external_id")],
+            heading="Metadata",
         ),
     ]
 
@@ -349,6 +351,11 @@ class SOPPage(BaseWikiPage):
     def references_html(self):
         from .richtext_utils import render_list
         return render_list(self.references, "ul")
+
+    @property
+    def example_applications_html(self):
+        from .richtext_utils import render_list
+        return render_list(self.example_applications, "ul")
 
     def clean(self):
         super().clean()

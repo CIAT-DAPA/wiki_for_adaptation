@@ -216,6 +216,20 @@
                 <div class="prose prose-sm max-w-none">{{ child.references_html }}</div>
               </section>
               {% endif %}
+
+              {% if child.example_applications %}
+              <section id="example-applications-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
+                <h4 class="text-lg font-semibold text-gray-900 mb-3">Example Applications</h4>
+                <div class="prose prose-sm max-w-none">{{ child.example_applications_html }}</div>
+              </section>
+              {% endif %}
+
+              {% if child.unfccc_alignment %}
+              <section id="unfccc-{{ child.slug }}" class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-4 scroll-mt-20">
+                <h4 class="text-lg font-semibold text-gray-900 mb-3">UNFCCC Belém Adaptation Indicators</h4>
+                <div class="prose prose-sm max-w-none">{{ child.unfccc_alignment|richtext }}</div>
+              </section>
+              {% endif %}
             </article>
           {% endfor %}
         </div>
