@@ -132,9 +132,33 @@ class SectionBlock(blocks.StructBlock):
         template = 'home/blocks/section.html'
 
 
+class QuickStartStepBlock(blocks.StructBlock):
+    """One numbered step. The number and its coloured circle are drawn by the
+    template, so editors only type the title and description."""
+    title = blocks.CharBlock(max_length=120)
+    description = blocks.TextBlock()
+
+    class Meta:
+        icon = 'list-ol'
+        label = 'Step'
+
+
+class QuickStartBlock(blocks.StructBlock):
+    """A 'Quick Start' guide: an ordered list of steps rendered as numbered
+    coloured circles in a responsive grid. All styling lives in the template, so
+    editing the text (or adding/removing steps) can never break the numbering."""
+    heading = blocks.CharBlock(max_length=120, required=False, default='Quick Start Guide')
+    steps = blocks.ListBlock(QuickStartStepBlock())
+
+    class Meta:
+        icon = 'list-ol'
+        label = 'Quick Start guide'
+        template = 'home/blocks/quick_start.html'
+
+
 class ContentBlock(blocks.StreamBlock):
     """Reusable and user-friendly content blocks."""
-    
+
     heading = blocks.CharBlock(form_classname="title", icon="title", help_text="Section title")
     paragraph = blocks.RichTextBlock(icon="pilcrow", help_text="Rich formatted text")
     image = ImageChooserBlock(icon="image")
@@ -142,6 +166,7 @@ class ContentBlock(blocks.StreamBlock):
     partner = PartnerBlock()
     team_member = TeamMemberBlock()
     section = SectionBlock()
+    quick_start = QuickStartBlock()
     html = blocks.RawHTMLBlock(icon="code", help_text="⚠️ Advanced: Custom HTML")
     
     class Meta:

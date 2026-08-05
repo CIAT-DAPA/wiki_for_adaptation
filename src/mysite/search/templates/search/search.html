@@ -17,17 +17,17 @@
         <div class="flex items-center mb-4">
             <h2 class="text-lg font-semibold text-gray-900">Filters</h2>
         </div>
-        <p class="text-sm text-gray-600 mb-4">Narrow your search by filtering by tracking level, purpose, and theme to find exactly what you need.</p>
+        <p class="text-sm text-gray-600 mb-4">Use the filters below to narrow results by adaptation dimension, subdimension, or indicator.</p>
         
         <form method="get" action="{% url 'search' %}" class="grid md:grid-cols-3 gap-4">
             <input type="hidden" name="query" value="{% if search_query %}{{ search_query }}{% endif %}">
 
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    Purpose
+                    Adaptation Dimension
                 </label>
                 <select name="dimension" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
-                    <option value="all">All purposes</option>
+                    <option value="all">All adaptation dimensions</option>
                     {% for dim in dimensions %}
                         <option value="{{ dim }}" {% if dimension_filter == dim %}selected{% endif %}>{{ dim }}</option>
                     {% endfor %}
@@ -36,10 +36,10 @@
 
             <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    Theme
+                    Subdimension
                 </label>
                 <select name="indicator_type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-green" onchange="this.form.submit()">
-                    <option value="all">All themes</option>
+                    <option value="all">All subdimensions</option>
                     {% for type in indicator_types %}
                         <option value="{{ type }}" {% if indicator_type_filter == type %}selected{% endif %}>{{ type }}</option>
                     {% endfor %}
@@ -69,56 +69,53 @@
         <span class="font-semibold text-gray-900">{{ metric_count }}</span> metric{{ metric_count|pluralize }}
     </p> -->
 
-    <!-- Each indicator, with its metrics nested beneath it -->
-    <div class="space-y-6 mb-8">
+    <!-- Results: each indicator is a big cell on the left that spans its
+         metrics (small cells) on the right, like a merged spreadsheet cell. -->
+    <div class="space-y-4 mb-8">
         {% for indicator in indicator_rows %}
-        <div>
-            <!-- Indicator card -->
-            <a href="{% pageurl indicator %}" class="block bg-white border border-gray-200 border-l-4 border-l-blue-500 rounded-lg shadow-sm p-5 hover:shadow-md transition-all group">
-                <div class="flex items-start justify-between gap-4">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="inline-block bg-blue-100 text-blue-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded">indicator</span>
-                        <span class="text-gray-500 text-xs">{{ indicator.first_published_at|date:"M d, Y" }}</span>
-                    </div>
-                    <div class="flex items-center gap-3 flex-shrink-0">
-                        <span class="inline-flex items-center gap-1.5 text-xs text-gray-500"><span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>{{ indicator.metric_list|length }} metric{{ indicator.metric_list|length|pluralize }}</span>
-                        <i class="fas fa-arrow-right text-gray-300 group-hover:text-blue-500 transition-colors"></i>
-                    </div>
+        <div class="flex flex-col sm:flex-row items-stretch bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+
+            <!-- Left: the indicator (spanning cell) -->
+            <a href="{% pageurl indicator %}"
+               class="sm:w-1/3 md:w-1/4 shrink-0 flex flex-col justify-center bg-blue-50/60 border-l-4 border-l-blue-500 border-b sm:border-b-0 sm:border-r border-gray-200 p-4 group">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="inline-block bg-blue-100 text-blue-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded">indicator</span>
+                    <span class="text-xs text-gray-500">{{ indicator.metric_list|length }} metric{{ indicator.metric_list|length|pluralize }}</span>
                 </div>
-                <h3 class="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition-colors">{{ indicator.title }}</h3>
+                <h3 class="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{{ indicator.title }}</h3>
                 {% if indicator.description %}
-                <p class="text-sm text-gray-600 mb-3">{{ indicator.description|striptags|truncatewords:35 }}</p>
+                <p class="text-xs text-gray-600 mt-1 line-clamp-3">{{ indicator.description|striptags|truncatewords:25 }}</p>
                 {% endif %}
                 {% if indicator.dimension or indicator.indicator_type %}
-                <div class="flex flex-wrap gap-2">
-                    {% if indicator.dimension %}<span class="inline-block bg-gray-50 border border-gray-200 text-gray-600 text-xs px-2.5 py-0.5 rounded-full">{{ indicator.dimension }}</span>{% endif %}
-                    {% if indicator.indicator_type %}<span class="inline-block bg-gray-50 border border-gray-200 text-gray-600 text-xs px-2.5 py-0.5 rounded-full">{{ indicator.indicator_type }}</span>{% endif %}
+                <div class="flex flex-wrap gap-1.5 mt-2">
+                    {% if indicator.dimension %}<span class="inline-block bg-white border border-gray-200 text-gray-600 text-[10px] px-2 py-0.5 rounded-full">{{ indicator.dimension }}</span>{% endif %}
+                    {% if indicator.indicator_type %}<span class="inline-block bg-white border border-gray-200 text-gray-600 text-[10px] px-2 py-0.5 rounded-full">{{ indicator.indicator_type }}</span>{% endif %}
                 </div>
                 {% endif %}
             </a>
 
-            <!-- Nested metrics -->
-            {% if indicator.metric_list %}
-            <div class="ml-5 md:ml-8 mt-3 space-y-3 border-l-2 border-gray-200 pl-5">
+            <!-- Right: the indicator's metrics (small cells) -->
+            <div class="flex-1 divide-y divide-gray-100">
                 {% for metric in indicator.metric_list %}
-                <a href="{% pageurl metric %}" class="block bg-white border border-gray-200 border-l-4 border-l-green-500 rounded-lg shadow-sm p-4 hover:shadow-md transition-all group">
-                    <div class="flex items-start justify-between gap-4">
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="inline-block bg-green-100 text-green-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded">metric</span>
-                            <span class="text-gray-500 text-xs">{{ metric.first_published_at|date:"M d, Y" }}</span>
-                        </div>
-                        <i class="fas fa-arrow-right text-gray-300 group-hover:text-green-500 transition-colors flex-shrink-0"></i>
-                    </div>
-                    <h4 class="text-base font-semibold text-gray-900 group-hover:text-green-600 transition-colors">{{ metric.title }}</h4>
-                    {% if metric.description %}
-                    <p class="text-sm text-gray-600 mt-1">{{ metric.description|striptags|truncatewords:25 }}</p>
-                    {% else %}
-                    <p class="text-sm text-gray-400 italic mt-1">No description available yet.</p>
-                    {% endif %}
-                </a>
+                <div class="flex items-stretch">
+                    <a href="{% pageurl metric %}" class="flex items-start gap-3 p-3 hover:bg-gray-50 group flex-1 min-w-0">
+                        <span class="inline-block bg-green-100 text-green-700 text-[10px] font-bold uppercase px-2 py-0.5 rounded mt-0.5 shrink-0">metric</span>
+                        <span class="min-w-0 flex-1">
+                            <span class="block text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors">{{ metric.title }}</span>
+                            {% if metric.description %}
+                            <span class="block text-xs text-gray-500 mt-0.5 line-clamp-2">{{ metric.description|striptags|truncatewords:20 }}</span>
+                            {% endif %}
+                        </span>
+                    </a>
+                    <label class="flex items-center gap-1.5 px-3 border-l border-gray-100 text-xs text-gray-500 cursor-pointer hover:bg-gray-50 select-none shrink-0" title="Add to comparison">
+                        <input type="checkbox" class="ta-compare-checkbox accent-green-600" data-id="{{ metric.id }}" data-title="{{ metric.title }}">
+                        <span class="hidden sm:inline">Compare</span>
+                    </label>
+                </div>
+                {% empty %}
+                <div class="p-3 text-sm text-gray-400 italic">No matching metrics.</div>
                 {% endfor %}
             </div>
-            {% endif %}
         </div>
         {% endfor %}
     </div>

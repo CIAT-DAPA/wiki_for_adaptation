@@ -16,7 +16,7 @@
 
       {% if child.resolution %}
       <div class="flex items-baseline gap-2 mb-3">
-        <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-400">Resolution</span>
+        <span class="text-sm font-semibold text-gray-900">Resolution</span>
         <span class="text-sm text-gray-700">{{ child.resolution }}</span>
       </div>
       {% endif %}
@@ -38,14 +38,14 @@
 
       {% if child.use_case %}
       <div class="mb-3">
-        <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Use case</div>
+        <div class="text-sm font-semibold text-gray-900 mb-1">Use case</div>
         <div class="prose prose-sm max-w-none text-gray-700">{{ child.use_case|richtext }}</div>
       </div>
       {% endif %}
 
       {% if child.resources %}
       <div>
-        <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-1">Resources</div>
+        <div class="text-sm font-semibold text-gray-900 mb-1">Resources</div>
         <div class="prose prose-sm max-w-none text-gray-700">{{ child.resources_html }}</div>
       </div>
       {% endif %}

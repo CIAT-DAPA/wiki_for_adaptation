@@ -53,7 +53,10 @@
             
             {% elif block.block_type == 'section' %}
                 {% include_block block %}
-            
+
+            {% elif block.block_type == 'quick_start' %}
+                {% include_block block %}
+
             {% elif block.block_type == 'feature_card' %}
                 {% include_block block %}
             

@@ -1,0 +1,113 @@
+{% extends "wagtailadmin/base.html" %}
+{% block titletag %}Import SOPs{% endblock %}
+
+{% block content %}
+<style>
+  /* Theme-aware: use Wagtail's text colour so it works in light and dark mode. */
+  .sop-import-wrap { color: var(--w-color-text-context, #262626); }
+  .sop-import-wrap h1, .sop-import-wrap h2, .sop-import-wrap p,
+  .sop-import-wrap label, .sop-import-wrap td, .sop-import-wrap th,
+  .sop-import-wrap code, .sop-import-wrap summary, .sop-import-wrap li {
+    color: var(--w-color-text-context, #262626);
+  }
+  .sop-import-wrap .help, .sop-import-wrap .meta { color: var(--w-color-text-meta, #5c5c5c); }
+  /* Inputs: force a light field so typed text is always readable in both themes. */
+  .sop-import-wrap input, .sop-import-wrap select {
+    color: #1a1a1a; background-color: #fff;
+    border: 1px solid #949494; border-radius: 6px; padding: .45rem .6rem;
+    max-width: 32rem;
+  }
+  .sop-import-wrap code {
+    background: var(--w-color-surface-field-inactive, rgba(128,128,128,.18));
+    padding: 1px 5px; border-radius: 4px; font-size: .85em;
+  }
+  .sop-import-wrap table.listing { margin-top: .5rem; }
+  .sop-import-cols { columns: 2; column-gap: 2rem; font-size: .9em; }
+  @media (max-width: 700px) { .sop-import-cols { columns: 1; } }
+</style>
+<div class="sop-import-wrap">
+  <header class="nice-padding" style="padding-top:2rem;padding-bottom:.5rem;">
+    <h1 style="margin:0;font-size:1.75rem;">Import SOPs</h1>
+  </header>
+
+  <div class="nice-padding">
+    <p>
+      Upload the SOP masterfile (<code>.xlsx</code>). Each row of the
+      <strong>SOPs</strong> sheet creates or updates an Indicator → Metric → SOP.
+      Rows are matched by their stable IDs (<code>indicator_id</code> /
+      <code>sop_id</code>), so re-uploading <strong>updates</strong> existing pages
+      instead of duplicating them.
+    </p>
+
+    <ul style="margin:.75rem 0 1rem 1.25rem;list-style:disc;">
+      <li><strong>Dry run</strong> — checks the file and shows what would be
+        created/updated/errored, <em>without saving anything</em>. Use it to
+        validate your template first.</li>
+      <li><strong>Import as drafts</strong> — creates the pages unpublished, for
+        review. Note: a SOP only appears on the site once its Indicator
+        <em>and</em> Metric are also published, so publish the branch
+        <strong>top-down</strong> (Indicator → Metric → SOP).</li>
+      <li><strong>Import and publish</strong> — creates and publishes the whole
+        Indicator → Metric → SOP branch at once (visible immediately).</li>
+    </ul>
+
+    <p style="margin:1rem 0;">
+      <a class="button button-secondary" href="{% url 'import_sops_template' %}">
+        ⬇ Download the .xlsx template
+      </a>
+    </p>
+
+    <details style="margin-bottom:1.5rem;">
+      <summary style="cursor:pointer;font-weight:600;">Expected columns ({{ columns|length }})</summary>
+      <ul class="sop-import-cols" style="margin-top:.75rem;">
+        {% for name, desc in columns %}
+          <li style="break-inside:avoid;margin-bottom:.4rem;"><code>{{ name }}</code> — {{ desc }}</li>
+        {% endfor %}
+      </ul>
+    </details>
+
+    <form action="" method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="w-field__wrapper" style="margin-bottom:1rem;">
+          <label class="w-field__label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          <div>{{ field }}</div>
+          {% if field.help_text %}<p class="help">{{ field.help_text }}</p>{% endif %}
+          {% for error in field.errors %}<p class="error-message" style="color:#cd4444;">{{ error }}</p>{% endfor %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="button">Run import</button>
+    </form>
+
+    {% if report %}
+      <h2 style="margin-top:2rem;">Result — {{ report.mode }}</h2>
+      <p>
+        <strong>{{ report.total }}</strong> row(s):
+        {{ report.created }} created · {{ report.updated }} updated ·
+        <span {% if report.errors %}style="color:#cd4444;font-weight:bold;"{% endif %}>{{ report.errors }} errors</span>
+        {% if report.mode == "dry-run" %}<em>(dry run — nothing saved)</em>{% endif %}
+      </p>
+
+      <table class="listing">
+        <thead>
+          <tr><th>Result</th><th>SOP ID</th><th>Title</th><th>Detail</th></tr>
+        </thead>
+        <tbody>
+          {% for row in report.rows %}
+            <tr>
+              <td>
+                {% if row.action == "error" %}
+                  <span style="color:#cd4444;font-weight:bold;">ERROR</span>
+                {% else %}{{ row.action|upper }}{% endif %}
+              </td>
+              <td>{{ row.sop_id }}</td>
+              <td>{{ row.title|default:"—" }}</td>
+              <td>{{ row.error|default:"" }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
