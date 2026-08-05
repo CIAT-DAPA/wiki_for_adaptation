@@ -8,6 +8,7 @@ from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
 from search import views as search_views
+from catalog import views as catalog_views
 from mysite.oidc_views import oidc_logout_view, wagtail_login_redirect
 from mysite.views import become_editor_view, feedback_view
 
@@ -15,6 +16,8 @@ urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
+    path("indicators-library/", catalog_views.indicators_library, name="indicators_library"),
+    path("compare/", catalog_views.compare, name="compare"),
     # Static pages below are now managed by Wagtail - create them in the admin
     # path("wiki-instructions/", TemplateView.as_view(template_name="wiki_instructions.html"), name="wiki_instructions"),
     # path("faq/", TemplateView.as_view(template_name="faq.html"), name="faq"),

@@ -14,6 +14,7 @@ from wagtail.signals import (
 )
 from wagtail.models import TaskState, WorkflowState
 from .views import DetailedSiteHistoryView
+from .admin_views import sop_import_view, sop_import_template, can_import_sops
 import logging
 import os
 from pathlib import Path
@@ -120,6 +121,32 @@ def register_detailed_site_history_url():
     return [
         path("reports/detailed-audit/", DetailedSiteHistoryView.as_view(), name="detailed_site_history"),
     ]
+
+
+@hooks.register("register_admin_urls")
+def register_sop_import_url():
+    """Register the bulk SOP import screen in Wagtail admin."""
+    return [
+        path("import-sops/", sop_import_view, name="import_sops"),
+        path("import-sops/template/", sop_import_template, name="import_sops_template"),
+    ]
+
+
+@hooks.register("register_admin_menu_item")
+def register_sop_import_menu_item():
+    """Add 'Import SOPs' to the Wagtail admin sidebar (superusers + Content Developers)."""
+    from wagtail.admin.menu import MenuItem as _MenuItem
+
+    class _ImportMenuItem(_MenuItem):
+        def is_shown(self, request):
+            return can_import_sops(request.user)
+
+    return _ImportMenuItem(
+        "Import SOPs",
+        reverse("import_sops"),
+        icon_name="upload",
+        order=900,
+    )
 
 
 @hooks.register("register_reports_menu_item")

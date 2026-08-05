@@ -1,0 +1,79 @@
+{# Floating "compare" selection tray. Works site-wide via localStorage; any
+   checkbox with class .ta-compare-checkbox (data-id, data-title) feeds it. #}
+<div id="ta-compare-bar" class="fixed bottom-0 inset-x-0 z-[9998] hidden bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
+  <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
+    <span class="text-sm font-semibold text-gray-700 shrink-0">Compare:</span>
+    <div id="ta-compare-chips" class="flex items-center gap-2 flex-wrap flex-1 min-w-0"></div>
+    <button type="button" id="ta-compare-clear" class="text-sm text-gray-500 hover:text-gray-700 shrink-0">Clear</button>
+    <a id="ta-compare-go" class="px-4 py-2 bg-brand-green text-white rounded-lg text-sm font-semibold shrink-0 opacity-50 pointer-events-none">Compare</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  var KEY = 'ta_compare', MAX = 4;
+  function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } }
+  function save(items) { localStorage.setItem(KEY, JSON.stringify(items)); }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+
+  var bar, chips, go, clearBtn;
+
+  function render() {
+    if (!bar) return;
+    var items = load();
+    bar.classList.toggle('hidden', items.length === 0);
+    chips.innerHTML = '';
+    items.forEach(function (it) {
+      var s = document.createElement('span');
+      s.className = 'inline-flex items-center gap-1.5 bg-gray-100 rounded-full pl-3 pr-1.5 py-1 text-xs text-gray-700 max-w-xs';
+      s.innerHTML = '<span class="truncate">' + esc(it.title) + '</span>';
+      var b = document.createElement('button');
+      b.type = 'button'; b.textContent = '×';
+      b.className = 'text-gray-400 hover:text-red-500 font-bold leading-none';
+      b.addEventListener('click', function () { remove(it.id); });
+      s.appendChild(b);
+      chips.appendChild(s);
+    });
+    if (items.length >= 2) {
+      go.classList.remove('opacity-50', 'pointer-events-none');
+      go.href = '/compare/?ids=' + items.map(function (i) { return i.id; }).join(',');
+    } else {
+      go.classList.add('opacity-50', 'pointer-events-none');
+      go.removeAttribute('href');
+    }
+    var selected = {};
+    items.forEach(function (i) { selected[String(i.id)] = true; });
+    document.querySelectorAll('.ta-compare-checkbox').forEach(function (cb) {
+      cb.checked = !!selected[String(cb.dataset.id)];
+    });
+  }
+
+  function add(id, title) {
+    var items = load();
+    if (items.some(function (i) { return String(i.id) === String(id); })) return;
+    if (items.length >= MAX) { alert('You can compare up to ' + MAX + ' items at a time.'); render(); return; }
+    items.push({ id: id, title: title });
+    save(items); render();
+  }
+  function remove(id) {
+    save(load().filter(function (i) { return String(i.id) !== String(id); }));
+    render();
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    bar = document.getElementById('ta-compare-bar');
+    chips = document.getElementById('ta-compare-chips');
+    go = document.getElementById('ta-compare-go');
+    clearBtn = document.getElementById('ta-compare-clear');
+    if (clearBtn) clearBtn.addEventListener('click', function () { save([]); render(); });
+    document.querySelectorAll('.ta-compare-checkbox').forEach(function (cb) {
+      cb.addEventListener('change', function (e) {
+        e.stopPropagation();
+        if (cb.checked) add(cb.dataset.id, cb.dataset.title);
+        else remove(cb.dataset.id);
+      });
+    });
+    render();
+  });
+})();
+</script>

@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags %}
+
+{% block title %}Compare metrics{% endblock %}
+
+{% block extra_css %}
+<style>
+  .compare-table th.row-label { position: sticky; left: 0; background: #fff; z-index: 5; }
+  .compare-table thead th.row-label { background: #f9fafb; }
+  .compare-cell { max-height: 15rem; overflow: auto; }
+  .compare-cell ul { list-style: disc; padding-left: 1.25rem; }
+  .compare-cell ol { list-style: decimal; padding-left: 1.25rem; }
+  @media print {
+    nav, footer, #ta-compare-bar, .no-print { display: none !important; }
+    .compare-cell { max-height: none; overflow: visible; }
+    .compare-table { font-size: 11px; }
+    .shadow-sm, .shadow-md { box-shadow: none !important; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-full mx-auto px-4 py-8">
+  <div class="flex items-start justify-between mb-6 gap-4 flex-wrap">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Compare metrics</h1>
+      <p class="text-gray-600 text-sm mt-1">Side-by-side comparison of the selected metrics and their SOPs.</p>
+    </div>
+    <div class="flex gap-2 no-print">
+      <a href="/search/" class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-100">← Back to search</a>
+      {% if columns|length >= 2 %}
+      <button type="button" onclick="window.print()" class="px-4 py-2 bg-brand-green text-white rounded-lg text-sm font-semibold"><i class="fas fa-print mr-1"></i> Print / Save PDF</button>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if columns|length < 2 %}
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-6 text-amber-800 max-w-2xl">
+      <p class="font-semibold mb-1">Select at least 2 metrics to compare.</p>
+      <p class="text-sm">Go to <a href="/search/" class="underline">search</a>, tick the “Compare” boxes on the metrics you’re interested in, then click <strong>Compare</strong> in the bar at the bottom.</p>
+    </div>
+  {% else %}
+  <div class="overflow-x-auto border border-gray-200 rounded-lg bg-white">
+    <table class="w-full text-sm compare-table">
+      <thead>
+        <tr class="border-b border-gray-200">
+          <th class="row-label text-left p-3 w-44 min-w-[11rem]"></th>
+          {% for col in columns %}
+          <th class="text-left align-top p-3 min-w-[18rem] border-l border-gray-100">
+            {% if col.indicator %}<div class="text-[10px] font-bold uppercase text-blue-600 mb-0.5">{{ col.indicator.title }}</div>{% endif %}
+            <a href="{% pageurl col.metric %}" class="block font-bold text-gray-900 hover:text-brand-green leading-snug">{{ col.metric.title }}</a>
+            <button type="button" class="ta-compare-remove no-print text-xs text-gray-400 hover:text-red-500 mt-1" data-id="{{ col.metric.id }}">✕ Remove</button>
+          </th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% comment %} Metric-level rows {% endcomment %}
+        <tr class="border-b border-gray-100">
+          <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Purpose</th>
+          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100"><div class="compare-cell prose prose-sm max-w-none">{{ col.metric.purpose|richtext }}</div></td>{% endfor %}
+        </tr>
+        <tr class="border-b border-gray-100">
+          <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Adaptation tracking</th>
+          {% for col in columns %}
+          <td class="p-3 align-top border-l border-gray-100 text-gray-700">
+            {% if col.metric.tracks_vulnerability %}<div class="text-xs mb-0.5"><i class="fas fa-check text-brand-green mr-1"></i>Tracking vulnerability</div>{% endif %}
+            {% if col.metric.tracks_intervention_impacts %}<div class="text-xs mb-1"><i class="fas fa-check text-brand-green mr-1"></i>Assessing intervention impacts</div>{% endif %}
+            <div class="compare-cell prose prose-sm max-w-none">{{ col.metric.adaptation_tracking_function|richtext }}</div>
+          </td>
+          {% endfor %}
+        </tr>
+
+        {% comment %} SOP-level rows {% endcomment %}
+        <tr class="border-b border-gray-100">
+          <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Units</th>
+          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100"><div class="compare-cell prose prose-sm max-w-none">{% if col.sop %}{{ col.sop.units_html }}{% else %}<span class="text-gray-400">—</span>{% endif %}</div></td>{% endfor %}
+        </tr>
+        <tr class="border-b border-gray-100">
+          <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Frequency</th>
+          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100 text-gray-700">{% if col.sop.frequency %}{{ col.sop.frequency }}{% else %}<span class="text-gray-400">—</span>{% endif %}</td>{% endfor %}
+        </tr>
+        <tr class="border-b border-gray-100">
+          <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Geographic scale</th>
+          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100 text-gray-700">{% if col.sop.geographic_scale %}{{ col.sop.geographic_scale }}{% else %}<span class="text-gray-400">—</span>{% endif %}</td>{% endfor %}
+        </tr>
+        <tr class="border-b border-gray-100">
+          <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Data sources</th>
+          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100"><div class="compare-cell prose prose-sm max-w-none">{% if col.sop %}{{ col.sop.data_sources_html }}{% else %}<span class="text-gray-400">—</span>{% endif %}</div></td>{% endfor %}
+        </tr>
+        <tr class="border-b border-gray-100">
+          <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Technical capacity</th>
+          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100"><div class="compare-cell prose prose-sm max-w-none">{% if col.sop.technical_capacity %}{{ col.sop.technical_capacity|richtext }}{% else %}<span class="text-gray-400">—</span>{% endif %}</div></td>{% endfor %}
+        </tr>
+        <tr class="border-b border-gray-100">
+          <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Method options</th>
+          {% for col in columns %}
+          <td class="p-3 align-top border-l border-gray-100 text-gray-700">
+            {% for meth in col.methods %}<div class="text-xs mb-0.5"><i class="fas fa-circle text-[5px] text-brand-green align-middle mr-1"></i>{{ meth.title }}</div>{% empty %}<span class="text-gray-400">—</span>{% endfor %}
+          </td>
+          {% endfor %}
+        </tr>
+        <tr class="border-b border-gray-100">
+          <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Activities &amp; steps</th>
+          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100"><div class="compare-cell sop-steps prose prose-sm max-w-none">{% if col.sop %}{{ col.sop.activities_and_steps_html }}{% else %}<span class="text-gray-400">—</span>{% endif %}</div></td>{% endfor %}
+        </tr>
+        <tr class="border-b border-gray-100">
+          <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Enhancing robustness</th>
+          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100"><div class="compare-cell prose prose-sm max-w-none">{% if col.sop %}{{ col.sop.options_enhancing_robustness_html }}{% else %}<span class="text-gray-400">—</span>{% endif %}</div></td>{% endfor %}
+        </tr>
+        <tr class="border-b border-gray-100">
+          <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Reducing costs</th>
+          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100"><div class="compare-cell prose prose-sm max-w-none">{% if col.sop %}{{ col.sop.options_reducing_costs_html }}{% else %}<span class="text-gray-400">—</span>{% endif %}</div></td>{% endfor %}
+        </tr>
+        <tr class="border-b border-gray-100">
+          <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Available tools</th>
+          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100"><div class="compare-cell prose prose-sm max-w-none">{% if col.sop %}{{ col.sop.available_tools_and_code_html }}{% else %}<span class="text-gray-400">—</span>{% endif %}</div></td>{% endfor %}
+        </tr>
+        <tr class="border-b border-gray-100">
+          <th class="row-label text-left align-top p-3 font-semibold text-gray-700">References</th>
+          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100"><div class="compare-cell prose prose-sm max-w-none">{% if col.sop %}{{ col.sop.references_html }}{% else %}<span class="text-gray-400">—</span>{% endif %}</div></td>{% endfor %}
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  document.querySelectorAll('.ta-compare-remove').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = btn.dataset.id;
+      try {
+        var items = JSON.parse(localStorage.getItem('ta_compare')) || [];
+        items = items.filter(function (i) { return String(i.id) !== String(id); });
+        localStorage.setItem('ta_compare', JSON.stringify(items));
+      } catch (e) {}
+      var current = (new URLSearchParams(window.location.search).get('ids') || '')
+        .split(',').filter(function (x) { return x && x !== id; });
+      window.location.href = current.length ? '/compare/?ids=' + current.join(',') : '/search/';
+    });
+  });
+</script>
+{% endblock %}
