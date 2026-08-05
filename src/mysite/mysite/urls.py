@@ -17,6 +17,7 @@ urlpatterns = [
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
     path("indicators-library/", catalog_views.indicators_library, name="indicators_library"),
+    path("compare/", catalog_views.compare, name="compare"),
     # Static pages below are now managed by Wagtail - create them in the admin
     # path("wiki-instructions/", TemplateView.as_view(template_name="wiki_instructions.html"), name="wiki_instructions"),
     # path("faq/", TemplateView.as_view(template_name="faq.html"), name="faq"),

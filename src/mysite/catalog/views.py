@@ -36,6 +36,41 @@ def _load_indicators_library():
     return _library_cache["data"]
 
 
+def compare(request):
+    """Side-by-side comparison of selected metrics (with their SOPs and methods).
+
+    Reached from the "Compare" selection tray; ``?ids=`` is a comma-separated list
+    of MetricPage ids (max 4), which also makes the comparison shareable.
+    """
+    from catalog.models import MetricPage, SOPPage, MethodPage
+
+    raw = request.GET.get("ids", "")
+    id_list = []
+    for part in raw.split(","):
+        part = part.strip()
+        if part.isdigit() and int(part) not in id_list:
+            id_list.append(int(part))
+    id_list = id_list[:4]
+
+    metrics = {m.id: m for m in MetricPage.objects.live().filter(id__in=id_list).specific()}
+    columns = []
+    for pk in id_list:  # preserve the order the user selected
+        metric = metrics.get(pk)
+        if metric is None:
+            continue
+        sop = metric.get_children().type(SOPPage).live().specific().first()
+        methods = list(metric.get_children().type(MethodPage).live().specific())
+        parent = metric.get_parent()
+        columns.append({
+            "metric": metric,
+            "sop": sop,
+            "methods": methods,
+            "indicator": parent.specific if parent else None,
+        })
+
+    return render(request, "catalog/compare.html", {"columns": columns})
+
+
 def indicators_library(request):
     """Informational page listing every planned indicator/metric.
 

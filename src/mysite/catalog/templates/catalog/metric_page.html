@@ -72,6 +72,10 @@
         <span><i class="fas fa-user text-gray-400 mr-1"></i> {{ page.entry_author|default:page.owner.get_full_name|default:page.owner.username|default:"Unknown" }}</span>
         <span><i class="fas fa-calendar text-gray-400 mr-1"></i> {{ page.first_published_at|date:"m/d/Y" }}</span>
       </p>
+      <label class="mt-3 inline-flex items-center gap-2 text-sm text-gray-600 border border-gray-300 rounded-lg px-3 py-1.5 cursor-pointer hover:border-brand-green select-none" title="Add this metric to the comparison">
+        <input type="checkbox" class="ta-compare-checkbox accent-green-600" data-id="{{ page.id }}" data-title="{{ page.title }}">
+        Add to comparison
+      </label>
     </header>
 
     {% if page.description %}

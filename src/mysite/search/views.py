@@ -17,7 +17,8 @@ def search(request):
     indicator_ct = ContentType.objects.get(app_label='catalog', model='indicatorpage')
     metric_ct = ContentType.objects.get(app_label='catalog', model='metricpage')
     sop_ct = ContentType.objects.get(app_label='catalog', model='soppage')
-    searchable_content_types = [indicator_ct, metric_ct, sop_ct]
+    method_ct = ContentType.objects.get(app_label='catalog', model='methodpage')
+    searchable_content_types = [indicator_ct, metric_ct, sop_ct, method_ct]
 
     # Some requests send query as literal strings like "None" or "null".
     if search_query is not None:
@@ -42,11 +43,12 @@ def search(request):
     metric_qs = MetricPage.objects.live()
 
     # Free-text search applies across both columns. Content lives across
-    # Indicators, Metrics and SOPs, but this page only has an Indicator and a
-    # Metric column. A hit inside a SOP is therefore mapped up to its parent
-    # Metric so the match still surfaces; previously such hits were dropped,
-    # which made a search whose term only appears in a SOP return no results
-    # (worsened once filters were applied). See user feedback item #1.
+    # Indicators, Metrics, SOPs and Methods, but this page only has an Indicator
+    # and a Metric column. A hit inside a SOP or a Method (both children of a
+    # Metric) is therefore mapped up to its parent Metric so the match still
+    # surfaces; previously such hits were dropped, which made a search whose term
+    # only appears in a SOP/Method return no results (worsened once filters were
+    # applied). See user feedback item #1.
     if search_query:
         results = (
             Page.objects.live()
@@ -55,19 +57,19 @@ def search(request):
         )
         matched_indicator_pks = set()
         matched_metric_pks = set()
-        matched_sop_pks = set()
+        matched_child_pks = set()  # SOP/Method hits -> mapped to their parent Metric
         for result in results:
             if result.content_type_id == indicator_ct.id:
                 matched_indicator_pks.add(result.pk)
             elif result.content_type_id == metric_ct.id:
                 matched_metric_pks.add(result.pk)
-            elif result.content_type_id == sop_ct.id:
-                matched_sop_pks.add(result.pk)
+            elif result.content_type_id in (sop_ct.id, method_ct.id):
+                matched_child_pks.add(result.pk)
 
-        # SOPs are children of Metrics: surface the parent Metric of each hit.
-        if matched_sop_pks:
-            for sop in SOPPage.objects.live().filter(pk__in=matched_sop_pks):
-                parent = sop.get_parent()
+        # SOPs and Methods are children of Metrics: surface the parent Metric.
+        if matched_child_pks:
+            for child in Page.objects.filter(pk__in=matched_child_pks):
+                parent = child.get_parent()
                 if parent:
                     matched_metric_pks.add(parent.pk)
 

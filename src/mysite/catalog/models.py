@@ -115,8 +115,17 @@ class MetricPage(BaseWikiPage):
         MultiFieldPanel([FieldPanel("entry_author")], heading="Metadata"),
     ]
 
+    @property
+    def searchable_text(self):
+        """Plain-text (HTML stripped) of all metric prose, for full-text search."""
+        from django.utils.html import strip_tags
+        return strip_tags(" ".join(
+            p for p in [self.description, self.purpose, self.adaptation_tracking_function] if p
+        ))
+
     search_fields = BaseWikiPage.search_fields + [
         index.SearchField("description"),
+        index.SearchField("searchable_text"),
     ]
 
     template = "catalog/metric_page.html"
@@ -179,8 +188,20 @@ class MethodPage(BaseWikiPage):
         FieldPanel("resources"),
     ]
 
+    @property
+    def searchable_text(self):
+        """Plain-text (HTML stripped) of all method prose, for full-text search."""
+        from django.utils.html import strip_tags
+        return strip_tags(" ".join(
+            p for p in [
+                self.description, self.resolution, self.advantages,
+                self.limitations, self.use_case, self.resources,
+            ] if p
+        ))
+
     search_fields = BaseWikiPage.search_fields + [
         index.SearchField("description"),
+        index.SearchField("searchable_text"),
     ]
 
     template = "catalog/method_page.html"
@@ -301,9 +322,24 @@ class SOPPage(BaseWikiPage):
         ),
     ]
 
+    @property
+    def searchable_text(self):
+        """Plain-text (HTML stripped) of every SOP body field, for full-text search."""
+        from django.utils.html import strip_tags
+        parts = [
+            self.definition, self.data_sources, self.units, self.frequency,
+            self.geographic_scale, self.technical_capacity, self.estimated_time,
+            self.activities_and_steps, self.options_enhancing_robustness,
+            self.options_reducing_costs, self.available_tools_and_code,
+            self.references, self.flagship_method_status, self.example_applications,
+            self.unfccc_alignment, self.visual_content,
+        ]
+        return strip_tags(" ".join(p for p in parts if p))
+
     search_fields = BaseWikiPage.search_fields + [
         index.SearchField("keywords"),
         index.AutocompleteField("keywords"),
+        index.SearchField("searchable_text"),
     ]
 
     template = "catalog/sop_page.html"

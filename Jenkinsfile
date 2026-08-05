@@ -98,6 +98,24 @@ pipeline {
             }
         }
 
+        stage('Update Search Index') {
+            steps {
+                script {
+                    try {
+                        sshCommand remote: remote, command: """
+                            cd /opt/goodall/wiki_for_adaptation/src/mysite
+                            source /opt/miniforge/etc/profile.d/conda.sh
+                            conda activate goodall
+                            python manage.py update_index
+                        """
+                    } catch (Exception e) {
+                        echo "Update Index Error: ${e.message}"
+                        error("Failed to update search index: ${e.message}")
+                    }
+                }
+            }
+        }
+
         stage('Restart Application') {
             steps {
                 script {
