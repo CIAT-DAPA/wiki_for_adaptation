@@ -1,5 +1,7 @@
-{# Floating "compare" selection tray. Works site-wide via localStorage; any
-   checkbox with class .ta-compare-checkbox (data-id, data-title) feeds it. #}
+{% comment %}
+Floating "compare" selection tray. Works site-wide via localStorage; any
+checkbox with class .ta-compare-checkbox (data-id, data-title) feeds it.
+{% endcomment %}
 <div id="ta-compare-bar" class="fixed bottom-0 inset-x-0 z-[9998] hidden bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
   <div class="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
     <span class="text-sm font-semibold text-gray-700 shrink-0">Compare:</span>

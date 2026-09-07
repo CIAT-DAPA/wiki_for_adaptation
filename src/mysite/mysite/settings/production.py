@@ -39,6 +39,19 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # outdated JavaScript / CSS assets being served from cache
 STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 
+# Shared cache across gunicorn's worker processes. Without this, Django falls
+# back to LocMemCache (per-process), which silently breaks two things running
+# with --workers 4: the chatbot's rate limiting (effectively 4x the intended
+# limit) and its answer cache (duplicated per worker, wasting Gemini quota).
+# Also used by the home page stats cache (home_stats_v1).
+# One-time setup after this is deployed: `python manage.py createcachetable`.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache_table",
+    }
+}
+
 try:
     from .local import *
 except ImportError:

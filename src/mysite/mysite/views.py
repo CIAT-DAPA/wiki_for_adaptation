@@ -73,7 +73,7 @@ def _send_email_with_smtp(subject, message, recipient_list):
 
 
 def become_editor_view(request):
-    """Handle the 'Become an Editor' application form."""
+    """Handle the 'Become a contributor' application form."""
     if request.method == 'POST':
         form = BecomeEditorForm(request.POST)
         if form.is_valid():
@@ -83,9 +83,9 @@ def become_editor_view(request):
             message = form.cleaned_data['message']
             
             # Prepare email
-            subject = f'New Editor Application from {name}'
+            subject = f'New Contributor Application from {name}'
             email_body = f"""
-New editor application received:
+New contributor application received:
 
 Name: {name}
 Email: {email}
@@ -107,11 +107,11 @@ This is an automated message from TrackAdapt Wiki
                 
                 # Send confirmation to applicant
                 _send_email_with_smtp(
-                    'Your Editor Application - TrackAdapt Wiki',
+                    'Your Contributor Application - TrackAdapt Wiki',
                     f"""
 Hello {name},
 
-Thank you for your interest in becoming an editor for the TrackAdapt Wiki!
+Thank you for your interest in becoming a contributor to the TrackAdapt Wiki!
 
 We have received your application and will review it shortly. We'll get back to you within 5 business days.
 

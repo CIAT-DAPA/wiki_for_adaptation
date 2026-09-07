@@ -1,11 +1,11 @@
 {% load wagtailcore_tags %}
 
 {% if value.background_color == 'blue' %}
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-8 mb-8">
+    <div {% if value.anchor_id %}id="{{ value.anchor_id }}"{% endif %} class="scroll-mt-20 bg-blue-50 border border-blue-200 rounded-lg p-8 mb-8">
 {% elif value.background_color == 'gray' %}
-    <div class="bg-gray-50 border border-gray-200 rounded-lg p-8 mb-8">
+    <div {% if value.anchor_id %}id="{{ value.anchor_id }}"{% endif %} class="scroll-mt-20 bg-gray-50 border border-gray-200 rounded-lg p-8 mb-8">
 {% else %}
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-8 mb-8">
+    <div {% if value.anchor_id %}id="{{ value.anchor_id }}"{% endif %} class="scroll-mt-20 bg-white border border-gray-200 rounded-lg shadow-sm p-8 mb-8">
 {% endif %}
     <div class="flex items-start gap-4">
         <div class="w-12 h-12 bg-{{ value.icon_color }}-{% if value.background_color == 'blue' %}600{% else %}100{% endif %} text-{% if value.background_color == 'blue' %}white{% else %}{{ value.icon_color }}-600{% endif %} rounded-lg flex items-center justify-center flex-shrink-0">

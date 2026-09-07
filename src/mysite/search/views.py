@@ -87,6 +87,36 @@ def search(request):
             if (getattr(obj, field) or '').strip().lower() == target
         ]
 
+    def _distinct_options(values):
+        seen = {}
+        for v in values:
+            if not v or not v.strip():
+                continue
+            key = v.strip().lower()
+            seen.setdefault(key, v.strip())
+        return sorted(seen.values(), key=str.lower)
+
+    # Cascading filters: each dropdown's options are scoped to whatever was
+    # picked in the dropdowns above it, and a filter that no longer matches
+    # anything under its parent's selection is dropped (rather than silently
+    # producing zero results). Dimension is the top of the cascade, so its
+    # options are always the full set.
+    dimension_scoped_qs = IndicatorPage.objects.live()
+    if dimension_filter:
+        dimension_scoped_qs = dimension_scoped_qs.filter(pk__in=_matching_indicator_ids('dimension', dimension_filter))
+
+    indicator_types = _distinct_options(dimension_scoped_qs.values_list('indicator_type', flat=True))
+    if indicator_type_filter and indicator_type_filter.strip().lower() not in {t.lower() for t in indicator_types}:
+        indicator_type_filter = None
+
+    indicator_type_scoped_qs = dimension_scoped_qs
+    if indicator_type_filter:
+        indicator_type_scoped_qs = indicator_type_scoped_qs.filter(pk__in=_matching_indicator_ids('indicator_type', indicator_type_filter))
+
+    all_indicators = indicator_type_scoped_qs.order_by('title')
+    if indicator_filter and not all_indicators.filter(pk=indicator_filter).exists():
+        indicator_filter = None
+
     if dimension_filter:
         indicator_qs = indicator_qs.filter(pk__in=_matching_indicator_ids('dimension', dimension_filter))
     if indicator_type_filter:
@@ -149,27 +179,11 @@ def search(request):
     metric_count = sum(len(ind.metric_list) for ind in rows)
     has_results = bool(rows)
 
-    # Dropdown options, built from real data so every option matches something.
-    # Collapse near-duplicates (differing only by surrounding whitespace/casing)
-    # so the same label doesn't appear twice, while keeping a value that matches
-    # actual stored records.
-    def _distinct_options(values):
-        seen = {}
-        for v in values:
-            if not v or not v.strip():
-                continue
-            key = v.strip().lower()
-            seen.setdefault(key, v.strip())
-        return sorted(seen.values(), key=str.lower)
-
+    # Dimension is the top of the cascade, so its options are always the full
+    # set (indicator_types/all_indicators were already scoped above).
     dimensions = _distinct_options(
         IndicatorPage.objects.live().values_list('dimension', flat=True)
     )
-    indicator_types = _distinct_options(
-        IndicatorPage.objects.live().values_list('indicator_type', flat=True)
-    )
-    # Full list of indicators for the Indicators dropdown.
-    all_indicators = IndicatorPage.objects.live().order_by('title')
 
     # Paginate by indicator (one row each, with its metrics nested).
     paginator = Paginator(rows, 10)

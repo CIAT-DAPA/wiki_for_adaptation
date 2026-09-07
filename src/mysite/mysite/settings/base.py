@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "chatbot",  # AI chatbot (RAG over wiki content, Gemini)
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
+    "wagtail.contrib.table_block",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
