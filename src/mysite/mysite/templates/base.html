@@ -92,6 +92,15 @@
             .prose p { margin: 0.5rem 0; }
             .prose a { color: #10b981; text-decoration: underline; }
 
+            /* Wagtail's stock TableBlock renders bare <table>/<th>/<td> with no
+               classes at all, so editor-created tables (e.g. the Tracking
+               Framework comparison table) need baseline styling here. */
+            .wiki-table-wrap table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+            .wiki-table-wrap caption { text-align: left; caption-side: top; font-size: 0.75rem; color: #6b7280; margin-bottom: 0.5rem; }
+            .wiki-table-wrap th, .wiki-table-wrap td { border: 1px solid #e5e7eb; padding: 0.5rem; text-align: left; vertical-align: top; }
+            .wiki-table-wrap thead th { background: #f9fafb; }
+            .wiki-table-wrap tbody tr:nth-child(even) { background: #f9fafb; }
+
             /* "Activities and Steps": top-level steps render as numbered cards
                (green number badge). Scoped to the top-level <ol> so nested
                bullets/numbering inside a step keep their normal markers.
@@ -185,15 +194,16 @@
                                 <button class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1">
                                     <i class="fa-solid fa-chart-bar text-xs"></i> Indicators <i class="fa fa-chevron-down text-xs ml-1"></i>
                                 </button>
-                                <div class="absolute left-0 top-full pt-2 pointer-events-none group-hover:pointer-events-auto w-64">
+                                <div class="absolute left-0 top-full pt-2 pointer-events-none group-hover:pointer-events-auto w-72">
                                     <div class="bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                                        <a href="/search/?category=indicator" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Search Indicators</a>
-                                        <a href="/indicators-library/" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Indicators Library</a>
-                                        <a href="/tracking-framework#indicator-framework" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">Indicator Framework</a>
+                                        <a href="/tracking-framework#tracking-framework" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Adaptation tracking framework</a>
+                                        <a href="/tracking-framework#selection-criteria" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Criteria for selecting indicators/metrics</a>
+                                        <a href="/indicator-framework" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Indicator framework</a>
+                                        <a href="/search/?category=indicator" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">Search indicators</a>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Help Dropdown -->
                             <div class="relative group">
                                 <button class="text-gray-700 hover:text-brand-green font-medium flex items-center gap-1">
@@ -201,8 +211,9 @@
                                 </button>
                                 <div class="absolute left-0 top-full pt-2 pointer-events-none group-hover:pointer-events-auto w-64">
                                     <div class="bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                                        <a href="/wiki-instructions" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">How to navigate this wiki</a>
-                                        <a href="/faq" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">FAQ</a>
+                                        <a href="/definitions" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Definitions</a>
+                                        <a href="/faq" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">FAQs</a>
+                                        <a href="/wiki-instructions" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">How to navigate this wiki</a>
                                     </div>
                                 </div>
                             </div>
@@ -214,7 +225,7 @@
                                 </button>
                                 <div class="absolute left-0 top-full pt-2 pointer-events-none group-hover:pointer-events-auto w-64">
                                     <div class="bg-white border border-gray-200 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-                                        <a href="/become-editor" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Become an editor</a>
+                                        <a href="/become-editor" class="block px-4 py-3 text-gray-700 hover:bg-gray-50 border-b border-gray-100">Become a contributor</a>
                                         <a href="/feedback" class="block px-4 py-3 text-gray-700 hover:bg-gray-50">Feedback</a>
                                     </div>
                                 </div>
@@ -378,9 +389,11 @@
                 {# Override this in templates to add extra javascript #}
                 {% endblock %}
 
-                {# Open external links in a new tab (user feedback). Internal
-                   links keep navigating in the same tab. Runs on load and again
-                   whenever new content is injected (e.g. dynamic widgets). #}
+                {% comment %}
+                Open external links in a new tab (user feedback). Internal links
+                keep navigating in the same tab. Runs on load and again whenever
+                new content is injected (e.g. dynamic widgets).
+                {% endcomment %}
                 <script>
                     (function () {
                         function markExternalLinks(root) {
@@ -424,5 +437,10 @@
                         });
                     })();
                 </script>
+
+                {# AI chatbot widget (RAG over wiki content). Hidden until GEMINI_API_KEY is configured. #}
+                {% if CHATBOT_ENABLED %}
+                {% include "chatbot/widget.html" %}
+                {% endif %}
         </body>
 </html>

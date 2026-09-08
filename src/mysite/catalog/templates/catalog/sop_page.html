@@ -78,14 +78,14 @@
       {% if page.frequency %}
       <section id="frequency" class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 scroll-mt-20">
         <h3 class="text-base font-semibold text-gray-900 mb-2">Frequency</h3>
-        <div class="text-gray-700">{{ page.frequency }}</div>
+        <div class="prose prose-sm max-w-none text-gray-700">{{ page.frequency|richtext }}</div>
       </section>
       {% endif %}
 
       {% if page.geographic_scale %}
       <section id="geographic-scale" class="bg-white border border-gray-200 rounded-lg shadow-sm p-5 scroll-mt-20">
         <h3 class="text-base font-semibold text-gray-900 mb-2">Geographic Scale</h3>
-        <div class="text-gray-700">{{ page.geographic_scale }}</div>
+        <div class="prose prose-sm max-w-none text-gray-700">{{ page.geographic_scale|richtext }}</div>
       </section>
       {% endif %}
 

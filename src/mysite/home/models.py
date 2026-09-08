@@ -5,6 +5,7 @@ from wagtail.fields import RichTextField, StreamField
 from wagtail import blocks
 from wagtail.admin.panels import FieldPanel, MultiFieldPanel
 from wagtail.images.blocks import ImageChooserBlock
+from wagtail.contrib.table_block.blocks import TableBlock
 
 
 class HomePage(Page):
@@ -113,11 +114,22 @@ class SectionBlock(blocks.StructBlock):
         ('fa-info-circle', 'Info'),
         ('fa-envelope', 'Email'),
         ('fa-users', 'Users'),
+        ('fa-magnifying-glass', 'Magnifying glass'),
+        ('fa-diagram-project', 'Diagram / pathway'),
+        ('fa-list-check', 'Checklist'),
+        ('fa-tags', 'Tags / classification'),
+        ('fa-globe', 'Globe'),
+        ('fa-lightbulb', 'Lightbulb / best practices'),
     ])
     icon_color = blocks.ChoiceBlock(choices=[
         ('blue', 'Blue'),
         ('green', 'Green'),
         ('purple', 'Purple'),
+        ('orange', 'Orange'),
+        ('red', 'Red'),
+        ('teal', 'Teal'),
+        ('amber', 'Amber'),
+        ('indigo', 'Indigo'),
     ], default='blue')
     title = blocks.CharBlock(max_length=100)
     content = blocks.RichTextBlock(help_text="Section content")
@@ -126,10 +138,37 @@ class SectionBlock(blocks.StructBlock):
         ('blue', 'Light blue'),
         ('gray', 'Light gray'),
     ], default='white')
-    
+    anchor_id = blocks.CharBlock(
+        max_length=80, required=False,
+        help_text="Optional: lets other sections/nav items link straight to this section, e.g. 'why-track'. Leave blank if nothing links here.",
+    )
+
     class Meta:
         icon = 'doc-full'
         template = 'home/blocks/section.html'
+
+
+class LinkItemBlock(blocks.StructBlock):
+    """One link: visible label + destination. The destination can be a normal
+    URL/page path, or '#anchor-id' to jump to a SectionBlock's anchor further
+    down the same page."""
+    label = blocks.CharBlock(max_length=150)
+    url = blocks.CharBlock(max_length=255, help_text="A full URL, a page path (e.g. /faq), or #anchor-id to link to a section on this page.")
+
+    class Meta:
+        icon = 'link'
+        label = 'Link'
+
+
+class LinkListBlock(blocks.StructBlock):
+    """A titled list of links (e.g. a "See also" box), editable without HTML."""
+    heading = blocks.CharBlock(max_length=100, required=False, default='See')
+    links = blocks.ListBlock(LinkItemBlock())
+
+    class Meta:
+        icon = 'list-ul'
+        label = 'Link list ("See also")'
+        template = 'home/blocks/link_list.html'
 
 
 class QuickStartStepBlock(blocks.StructBlock):
@@ -167,6 +206,8 @@ class ContentBlock(blocks.StreamBlock):
     team_member = TeamMemberBlock()
     section = SectionBlock()
     quick_start = QuickStartBlock()
+    link_list = LinkListBlock()
+    table = TableBlock(table_options={'startRows': 4, 'startCols': 4}, icon="table", help_text="A data table")
     html = blocks.RawHTMLBlock(icon="code", help_text="⚠️ Advanced: Custom HTML")
     
     class Meta:
@@ -337,9 +378,63 @@ class FAQPage(Page):
     ]
     
     max_count = 1  # Only allow one FAQ page
-    
+
     class Meta:
         verbose_name = "FAQ Page"
+
+
+class DefinitionsPage(Page):
+    """Glossary page listing key terms and their definitions."""
+
+    subtitle = models.CharField(max_length=255, blank=True, help_text="Subtitle shown below the title")
+
+    body = StreamField([
+        ('definition', blocks.StructBlock([
+            ('term', blocks.CharBlock(max_length=255)),
+            ('definition', blocks.RichTextBlock()),
+        ], icon="openquote")),
+        ('paragraph', blocks.RichTextBlock(icon="pilcrow")),
+    ], use_json_field=True, blank=True)
+
+    content_panels = Page.content_panels + [
+        FieldPanel('subtitle'),
+        FieldPanel('body'),
+    ]
+
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, "Common page configuration"),
+    ]
+
+    max_count = 1  # Only allow one Definitions page
+
+    class Meta:
+        verbose_name = "Definitions Page"
+
+
+class IndicatorFrameworkPage(Page):
+    """Landing page for the "Indicator framework" nav item.
+
+    Gives context before the download, rather than triggering the file
+    download directly from the nav (which confused users with no page
+    feedback). The actual table is a static file linked from the template.
+    """
+
+    subtitle = models.CharField(max_length=255, blank=True, help_text="Subtitle shown below the title")
+    intro = RichTextField(blank=True, features=["bold", "italic", "link", "ol", "ul"])
+
+    content_panels = Page.content_panels + [
+        FieldPanel('subtitle'),
+        FieldPanel('intro'),
+    ]
+
+    promote_panels = [
+        MultiFieldPanel(Page.promote_panels, "Common page configuration"),
+    ]
+
+    max_count = 1  # Only allow one Indicator Framework page
+
+    class Meta:
+        verbose_name = "Indicator Framework Page"
 
 
 class WikiInstructionsPage(Page):

@@ -1,7 +1,3 @@
-import json
-import os
-from pathlib import Path
-
 from django.contrib.auth.decorators import user_passes_test
 from django.shortcuts import render
 from django.utils.decorators import method_decorator
@@ -10,30 +6,6 @@ from wagtail.log_actions import registry as log_registry
 from wagtail.models import PageLogEntry
 from auditlog.models import LogEntry
 from django.contrib.contenttypes.models import ContentType
-
-
-_LIBRARY_PATH = Path(__file__).resolve().parent / "data" / "indicators_library.json"
-_EMPTY_LIBRARY = {"counts": {}, "dimensions": [], "source": "", "generated_at": ""}
-
-# In-process cache keyed on the file's mtime, so regenerating the JSON is picked
-# up automatically (no app restart needed) while unchanged requests avoid re-parsing.
-_library_cache = {"mtime": None, "data": _EMPTY_LIBRARY}
-
-
-def _load_indicators_library():
-    """Load the pre-parsed indicators library JSON, reloading if the file changed."""
-    try:
-        mtime = os.path.getmtime(_LIBRARY_PATH)
-    except OSError:
-        return _EMPTY_LIBRARY
-    if _library_cache["mtime"] != mtime:
-        try:
-            with open(_LIBRARY_PATH, encoding="utf-8") as fh:
-                _library_cache["data"] = json.load(fh)
-            _library_cache["mtime"] = mtime
-        except (FileNotFoundError, ValueError):
-            _library_cache["data"] = _EMPTY_LIBRARY
-    return _library_cache["data"]
 
 
 def compare(request):
@@ -69,17 +41,6 @@ def compare(request):
         })
 
     return render(request, "catalog/compare.html", {"columns": columns})
-
-
-def indicators_library(request):
-    """Informational page listing every planned indicator/metric.
-
-    This content is not (yet) loaded as live wiki pages; it is a reference view
-    built from the planning spreadsheet (see the build_indicators_library
-    management command).
-    """
-    data = _load_indicators_library()
-    return render(request, "catalog/indicators_library.html", {"library": data})
 
 
 def is_admin(user):

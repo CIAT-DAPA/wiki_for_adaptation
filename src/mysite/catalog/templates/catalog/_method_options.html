@@ -15,9 +15,9 @@
       {% endif %}
 
       {% if child.resolution %}
-      <div class="flex items-baseline gap-2 mb-3">
-        <span class="text-sm font-semibold text-gray-900">Resolution</span>
-        <span class="text-sm text-gray-700">{{ child.resolution }}</span>
+      <div class="mb-3">
+        <div class="text-sm font-semibold text-gray-900 mb-1">Resolution</div>
+        <div class="prose prose-sm max-w-none text-gray-700">{{ child.resolution|richtext }}</div>
       </div>
       {% endif %}
 

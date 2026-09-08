@@ -5,7 +5,12 @@
   <article class="method">
     <header class="page-header">
       <h1 class="page-title">{{ page.title }}</h1>
-      {% if page.resolution %}<p class="page-meta"><strong>Resolution:</strong> {{ page.resolution }}</p>{% endif %}
+      {% if page.resolution %}
+      <div class="page-meta">
+        <strong>Resolution:</strong>
+        <div class="prose">{{ page.resolution|richtext }}</div>
+      </div>
+      {% endif %}
     </header>
 
     {% if page.description %}
