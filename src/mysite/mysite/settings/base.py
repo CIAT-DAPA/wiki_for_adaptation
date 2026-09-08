@@ -42,8 +42,10 @@ INSTALLED_APPS = [
     "catalog",
     "home",
     "search",
+    "chatbot",  # AI chatbot (RAG over wiki content, Gemini)
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
+    "wagtail.contrib.table_block",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
@@ -95,6 +97,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "mysite.context_processors.google_analytics",  # Google Analytics ID
+                "mysite.context_processors.chatbot_enabled",  # Hide chatbot widget when unconfigured
             ],
         },
     },
@@ -272,6 +275,23 @@ OIDC_AUTHENTICATION_CALLBACK_URL = "oidc_authentication_callback"
 # Custom callback view: fails gracefully with a friendly page instead of a raw
 # traceback when Keycloak/OIDC login fails.
 OIDC_CALLBACK_CLASS = "mysite.oidc_views.CustomOIDCAuthenticationCallbackView"
+
+# AI Chatbot (Google Gemini)
+# Get a free API key at: https://aistudio.google.com/apikey
+# Both the embedding model and Gemini Flash have a generous free tier.
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_EMBED_MODEL = os.environ.get("GEMINI_EMBED_MODEL", "gemini-embedding-001")
+GEMINI_CHAT_MODEL = os.environ.get("GEMINI_CHAT_MODEL", "gemini-flash-lite-latest")
+# How many content chunks to retrieve per question
+CHATBOT_TOP_K = int(os.environ.get("CHATBOT_TOP_K", "6"))
+# Quota protection: per-session request limits and answer caching.
+CHATBOT_RATE_LIMIT_PER_MIN = int(os.environ.get("CHATBOT_RATE_LIMIT_PER_MIN", "10"))
+CHATBOT_RATE_LIMIT_PER_DAY = int(os.environ.get("CHATBOT_RATE_LIMIT_PER_DAY", "100"))
+CHATBOT_CACHE_SECONDS = int(os.environ.get("CHATBOT_CACHE_SECONDS", "3600"))
+# Auto re-index a page when it is published/unpublished/deleted in Wagtail.
+# Set to False during bulk imports, then run `manage.py build_chat_index`.
+CHATBOT_AUTO_INDEX = os.environ.get("CHATBOT_AUTO_INDEX", "true").lower() != "false"
+
 
 # Google reCAPTCHA settings
 # Get your keys at: https://www.google.com/recaptcha/admin

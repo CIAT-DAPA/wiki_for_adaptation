@@ -16,7 +16,6 @@ urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("documents/", include(wagtaildocs_urls)),
     path("search/", search_views.search, name="search"),
-    path("indicators-library/", catalog_views.indicators_library, name="indicators_library"),
     path("compare/", catalog_views.compare, name="compare"),
     # Static pages below are now managed by Wagtail - create them in the admin
     # path("wiki-instructions/", TemplateView.as_view(template_name="wiki_instructions.html"), name="wiki_instructions"),
@@ -27,6 +26,7 @@ urlpatterns = [
     # Forms with CAPTCHA - keep as Django views
     path("become-editor/", become_editor_view, name="become_editor"),
     path("feedback/", feedback_view, name="feedback"),
+    path("chat/", include("chatbot.urls")),
     path("oidc/", include("mozilla_django_oidc.urls")),
     path("admin/login/", wagtail_login_redirect, name="wagtailadmin_login"),  # Override Wagtail login with OIDC
     path("admin/logout/", oidc_logout_view, name="wagtailadmin_logout"),  # Override Wagtail logout

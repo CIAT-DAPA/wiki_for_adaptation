@@ -1,0 +1,10 @@
+<div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 mb-8">
+    {% if value.heading %}
+    <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-400 mb-3">{{ value.heading }}</div>
+    {% endif %}
+    <ul class="space-y-2 text-sm">
+        {% for link in value.links %}
+        <li><a href="{{ link.url }}" class="text-brand-green hover:underline font-medium">{{ link.label }}</a></li>
+        {% endfor %}
+    </ul>
+</div>

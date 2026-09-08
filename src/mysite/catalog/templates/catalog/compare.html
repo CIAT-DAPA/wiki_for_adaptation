@@ -78,11 +78,11 @@
         </tr>
         <tr class="border-b border-gray-100">
           <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Frequency</th>
-          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100 text-gray-700">{% if col.sop.frequency %}{{ col.sop.frequency }}{% else %}<span class="text-gray-400">—</span>{% endif %}</td>{% endfor %}
+          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100 text-gray-700"><div class="compare-cell prose prose-sm max-w-none">{% if col.sop.frequency %}{{ col.sop.frequency|richtext }}{% else %}<span class="text-gray-400">—</span>{% endif %}</div></td>{% endfor %}
         </tr>
         <tr class="border-b border-gray-100">
           <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Geographic scale</th>
-          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100 text-gray-700">{% if col.sop.geographic_scale %}{{ col.sop.geographic_scale }}{% else %}<span class="text-gray-400">—</span>{% endif %}</td>{% endfor %}
+          {% for col in columns %}<td class="p-3 align-top border-l border-gray-100 text-gray-700"><div class="compare-cell prose prose-sm max-w-none">{% if col.sop.geographic_scale %}{{ col.sop.geographic_scale|richtext }}{% else %}<span class="text-gray-400">—</span>{% endif %}</div></td>{% endfor %}
         </tr>
         <tr class="border-b border-gray-100">
           <th class="row-label text-left align-top p-3 font-semibold text-gray-700">Data sources</th>

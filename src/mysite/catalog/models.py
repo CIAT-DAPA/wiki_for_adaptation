@@ -169,7 +169,11 @@ class MethodPage(BaseWikiPage):
 
     # Method-specific fields
     description = RichTextField(features=["h2", "h3", "bold", "italic", "ol", "ul", "link"], blank=True)
-    resolution = models.CharField(max_length=150, blank=True)
+    resolution = RichTextField(
+        features=["bold", "italic", "ol", "ul", "link"],
+        blank=True,
+        help_text="Paragraph field: supports multiple lines and lists.",
+    )
     advantages = RichTextField(blank=True)
     limitations = RichTextField(blank=True)
     use_case = RichTextField(blank=True)
@@ -261,8 +265,16 @@ class SOPPage(BaseWikiPage):
         blank=True,
         help_text="Supports bullet lists when several units apply.",
     )
-    frequency = models.CharField(max_length=100, blank=True)
-    geographic_scale = models.CharField(max_length=150, blank=True)
+    frequency = RichTextField(
+        features=["bold", "italic", "ol", "ul", "link"],
+        blank=True,
+        help_text="Paragraph field: supports multiple lines and lists.",
+    )
+    geographic_scale = RichTextField(
+        features=["bold", "italic", "ol", "ul", "link"],
+        blank=True,
+        help_text="Paragraph field: supports multiple lines and lists.",
+    )
     technical_capacity = RichTextField(blank=True)
 
     estimated_time = models.CharField(
@@ -297,6 +309,7 @@ class SOPPage(BaseWikiPage):
     )
 
     content_panels = BaseWikiPage.content_panels + [
+        FieldPanel("keywords"),
         FieldPanel("definition"),
         FieldPanel("data_sources"),
         FieldPanel("units"),
@@ -317,7 +330,7 @@ class SOPPage(BaseWikiPage):
 
     promote_panels = Page.promote_panels + [
         MultiFieldPanel(
-            [FieldPanel("entry_author"), FieldPanel("keywords"), FieldPanel("external_id")],
+            [FieldPanel("entry_author"), FieldPanel("external_id")],
             heading="Metadata",
         ),
     ]

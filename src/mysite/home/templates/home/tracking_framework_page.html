@@ -46,7 +46,15 @@
             
             {% elif block.block_type == 'team_member' %}
                 {% include_block block %}
-            
+
+            {% elif block.block_type == 'link_list' %}
+                {% include_block block %}
+
+            {% elif block.block_type == 'table' %}
+                <div class="wiki-table-wrap bg-white border border-gray-200 rounded-lg shadow-sm p-6 overflow-x-auto">
+                    {% include_block block %}
+                </div>
+
             {% endif %}
         {% endfor %}
     </div>
