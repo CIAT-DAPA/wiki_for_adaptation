@@ -97,6 +97,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "mysite.context_processors.google_analytics",  # Google Analytics ID
+                "mysite.context_processors.chatbot_enabled",  # Hide chatbot widget when unconfigured
             ],
         },
     },

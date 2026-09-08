@@ -438,7 +438,9 @@
                     })();
                 </script>
 
-                {# AI chatbot widget (RAG over wiki content) #}
+                {# AI chatbot widget (RAG over wiki content). Hidden until GEMINI_API_KEY is configured. #}
+                {% if CHATBOT_ENABLED %}
                 {% include "chatbot/widget.html" %}
+                {% endif %}
         </body>
 </html>
