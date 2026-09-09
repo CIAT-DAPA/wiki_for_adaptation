@@ -43,19 +43,18 @@ STORAGES["staticfiles"]["BACKEND"] = "django.contrib.staticfiles.storage.Manifes
 # back to LocMemCache (per-process), which silently breaks two things running
 # with --workers 4: the chatbot's rate limiting (effectively 4x the intended
 # limit) and its answer cache (duplicated per worker, wasting Gemini quota).
+# Also used by the home page stats cache (home_stats_v1).
 #
-# NOT enabled yet: switching this on requires running
-# `python manage.py createcachetable` first. The home page's stats cache
-# (home_stats_v1) reads this cache on every request with no error handling,
-# so turning this on before the table exists would 500 the whole home page.
-# Uncomment together with running createcachetable:
-#
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
-#         "LOCATION": "django_cache_table",
-#     }
-# }
+# The `django_cache_table` table must already exist before this is deployed
+# (created with `python manage.py createcachetable django_cache_table`,
+# independent of this setting, precisely to avoid a deploy racing ahead of
+# the table and 500ing the home page).
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "django_cache_table",
+    }
+}
 
 try:
     from .local import *
