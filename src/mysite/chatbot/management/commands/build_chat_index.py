@@ -45,10 +45,20 @@ class Command(BaseCommand):
             self.stdout.write(self.style.SUCCESS("Dry run complete (nothing embedded)."))
             return
 
+        # Clear the old index up front and save rows in batches as we go
+        # (rather than holding everything in memory until the end), so a run
+        # that fails partway through (e.g. the free-tier daily quota runs out)
+        # still leaves whatever was successfully embedded searchable, instead
+        # of losing all the API calls already spent.
+        ChatChunk.objects.all().delete()
+
         created = 0
-        new_rows: list[ChatChunk] = []
+        batch: list[ChatChunk] = []
+        BATCH_SIZE = 20
         try:
             for i, c in enumerate(chunks, start=1):
+                # embed_text already retries on 429 (rate limit), so this only
+                # raises for a real failure (bad key, exhausted retries, ...).
                 vector = embed_text(c["text"], task_type="RETRIEVAL_DOCUMENT")
                 row = ChatChunk(
                     page_id=c["page_id"],
@@ -59,19 +69,26 @@ class Command(BaseCommand):
                     text=c["text"],
                 )
                 row.embedding = vector
-                new_rows.append(row)
+                batch.append(row)
                 created += 1
+                if len(batch) >= BATCH_SIZE:
+                    ChatChunk.objects.bulk_create(batch)
+                    batch.clear()
                 if i % 10 == 0:
                     self.stdout.write(f"  embedded {i}/{len(chunks)}...")
                 # Gentle pacing to stay well within the free-tier rate limits.
-                time.sleep(0.1)
+                time.sleep(0.3)
         except GeminiError as exc:
-            raise CommandError(str(exc))
+            if batch:
+                ChatChunk.objects.bulk_create(batch)
+            raise CommandError(
+                f"{exc}\nIndexed {created}/{len(chunks)} chunks before failing "
+                "(already saved — re-run this command later to pick up the rest; "
+                "it will re-embed everything from scratch)."
+            )
 
-        # Swap in the fresh index atomically-ish: only clear once we have the
-        # new rows ready, so a failed run never leaves an empty index.
-        ChatChunk.objects.all().delete()
-        ChatChunk.objects.bulk_create(new_rows)
+        if batch:
+            ChatChunk.objects.bulk_create(batch)
 
         self.stdout.write(self.style.SUCCESS(
             f"Indexed {created} chunks. The chatbot is ready."
