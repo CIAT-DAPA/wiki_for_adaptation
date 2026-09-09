@@ -9,7 +9,6 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('home', '0008_alter_guidancepage_body_and_more'),
-        ('wagtailcore', '0097_baselogentry_uuid_action_timestamp_indexes'),
     ]
 
     operations = [
